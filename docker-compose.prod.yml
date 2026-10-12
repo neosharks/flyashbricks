@@ -133,7 +133,7 @@ services:
     logging: *logging
 
   mongo:
-    image: mongo:8.2
+    image: mongo:9.0
     <<: *hardening
     restart: unless-stopped
     # The image's own user; the data volume and keyfile are already owned by it.

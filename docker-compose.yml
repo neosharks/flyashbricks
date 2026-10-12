@@ -7,7 +7,7 @@ services:
   # No authentication, deliberately: the port is bound to loopback and this is
   # for local development only. docker-compose.prod.yml runs with auth.
   mongo:
-    image: mongo:8.2
+    image: mongo:9.0
     command: ['--replSet', 'rs0', '--bind_ip_all']
     ports: ['127.0.0.1:${MONGO_PORT:-27017}:27017']
     volumes:
