@@ -98,6 +98,39 @@ first run downloads a MongoDB binary.
 
 ---
 
+## Install on Proxmox
+
+In the Proxmox host's shell (Datacenter → your node → **Shell**), as root:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/neosharks/flyashbricks/main/deploy/proxmox/install.sh)"
+```
+
+It asks a few questions (press Enter for the defaults), then creates an unprivileged Debian
+LXC container (2 cores, 4 GB RAM, 20 GB disk) with Docker, generates every secret, builds
+and starts the production stack below, runs the migrations, and creates your company and its
+first admin — printing the temporary password once at the end.
+
+- **No domain?** Leave it empty: the app is served at `https://<container IP>` with a
+  certificate from Caddy's own authority. Browsers warn until you trust its root certificate
+  (the installer prints the command that shows it); install that on your phones to use the
+  app as a PWA.
+- **Domain?** Point its DNS at your public IP and forward ports 80 and 443 to the container
+  first; Caddy then gets a Let's Encrypt certificate.
+- The host CPU needs AVX (MongoDB 8 requires it).
+
+Update to the latest version (pull, rebuild, migrate, restart):
+
+```bash
+pct exec <container id> -- flyashbricks update
+```
+
+Settings live in `/opt/flyashbricks/.env.production` inside the container; edit, then run
+the update. Not on Proxmox? `deploy/proxmox/setup.sh install` does the same on any Debian or
+Ubuntu server, run as root.
+
+---
+
 ## Deploy (own server)
 
 ```bash

@@ -12,6 +12,11 @@
 #   }
 
 {$APP_DOMAIN} {
+	# Empty by default: a public certificate from Let's Encrypt. Set to
+	# `tls internal` when APP_DOMAIN is a LAN address or name that no public
+	# authority can verify; Caddy then signs the certificate itself.
+	{$APP_TLS}
+
 	encode zstd gzip
 
 	# Scheduled jobs are called by the scheduler container on the private
