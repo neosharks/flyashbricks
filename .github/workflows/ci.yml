@@ -107,6 +107,8 @@ jobs:
       AUTH_TRUST_HOST: 'true'
       MONGODB_URI: mongodb://127.0.0.1:27017/flyash?directConnection=true
       CRON_SECRET: ci-only-cron-secret-value
+      # The server runs as a production build, which refuses to start without Redis.
+      REDIS_URL: redis://127.0.0.1:6379
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       # A single-node replica set: sales and production run in transactions,
@@ -118,6 +120,8 @@ jobs:
             docker exec mongo mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }).ok }" && break
             sleep 2
           done
+      - name: Start Redis
+        run: docker run -d --name redis -p 6379:6379 redis:7.4-alpine
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:

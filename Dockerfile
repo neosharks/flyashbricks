@@ -36,7 +36,12 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0
-RUN addgroup -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
+# The app runs on node alone; the package managers bundled in the base image
+# are never used and only carry their own vulnerable dependencies.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-* \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg \
+    && addgroup -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
