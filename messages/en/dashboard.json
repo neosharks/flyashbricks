@@ -1,0 +1,53 @@
+{
+  "greeting": "Namaste, {name}",
+  "quick": {
+    "title": "What do you want to do?",
+    "logProduction": "Add bricks made",
+    "newSale": "New sale",
+    "purchase": "New stock arrived",
+    "collect": "Money to collect"
+  },
+  "alerts": {
+    "title": "Needs attention",
+    "material": "{name}: {qty} {unit} left",
+    "bricks": "{name}: only {count} bricks ready",
+    "allGood": "All good. Nothing needs attention right now."
+  },
+  "tiles": {
+    "ready": "Bricks ready to sell",
+    "readyHint": "Material for about {count} more",
+    "madeToday": "Made today",
+    "madeTodayHint": "{count} broken",
+    "soldMonth": "Sold this month",
+    "soldMonthHint": "{bricks} bricks",
+    "pending": "Money to collect",
+    "pendingHint": "From {count, plural, one {# customer} other {# customers}}"
+  },
+  "charts": {
+    "production": "Bricks made — last 14 days",
+    "sales": "Sales — last 14 days",
+    "salesSeries": "Sales value",
+    "empty": "Nothing yet in the last 14 days."
+  },
+  "materials": {
+    "title": "Raw materials",
+    "willLast": "lasts {days}",
+    "unknown": "—"
+  },
+  "dues": {
+    "title": "Customers who owe the most",
+    "empty": "Nobody owes you money right now.",
+    "call": "Call {name}"
+  },
+  "activity": {
+    "title": "Latest activity",
+    "empty": "Nothing has happened yet."
+  },
+  "empty": {
+    "title": "Welcome! Let's set up your yard",
+    "body": "Start by adding your raw materials, then your brick type and its mix. After that you can record bricks made and sales.",
+    "materials": "Add raw materials",
+    "bricks": "Add brick type",
+    "settings": "Add business details"
+  }
+}

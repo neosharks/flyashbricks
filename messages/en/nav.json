@@ -1,0 +1,29 @@
+{
+  "main": "Main navigation",
+  "dashboard": "Dashboard",
+  "rawMaterials": "Raw materials",
+  "production": "Production",
+  "stock": "Brick stock",
+  "sales": "Sales",
+  "customers": "Customers",
+  "users": "App logins",
+  "activity": "Activity log",
+  "account": "My account",
+  "signOut": "Sign out",
+  "signingOut": "Signing out…",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "more": "More",
+  "current": "(current page)",
+  "groups": {
+    "manufacturing": "Manufacturing",
+    "selling": "Selling",
+    "admin": "Administration",
+    "people": "People"
+  },
+  "backup": "Backup & export",
+  "settings": "Business settings",
+  "notifications": "Notifications",
+  "staff": "Staff",
+  "attendance": "Attendance"
+}

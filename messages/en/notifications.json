@@ -1,0 +1,99 @@
+{
+  "title": "Notifications",
+  "description": "Alerts about stock, sales, payments and your team. Tap one to open it.",
+  "bell": "Notifications",
+  "bellUnread": "Notifications, {count} unread",
+  "markAllRead": "Mark all as read",
+  "markedAllRead": "All notifications marked as read",
+  "markUnread": "Mark as unread",
+  "viewAll": "See all notifications",
+  "settings": "Choose alerts",
+  "empty": "No notifications yet.",
+  "emptyUnread": "You're all caught up.",
+  "emptyHint": "Alerts about low stock, sales and payments will appear here.",
+  "unread": "Unread",
+  "new": "New",
+  "opening": "Opening…",
+  "openFallback": "If nothing happens, tap here.",
+  "filters": {
+    "label": "Show",
+    "all": "All",
+    "unread": "Unread",
+    "categoryLabel": "Type"
+  },
+  "categories": {
+    "stock": "Stock",
+    "sales": "Sales",
+    "payments": "Payments",
+    "team": "Team",
+    "system": "System"
+  },
+  "categoryHints": {
+    "stock": "Raw material or bricks running low",
+    "sales": "New sales and cancelled bills",
+    "payments": "Money received, bills pending too long",
+    "team": "New employees",
+    "system": "Backup problems"
+  },
+  "channels": {
+    "inApp": "In the app",
+    "email": "Email",
+    "sms": "SMS",
+    "whatsapp": "WhatsApp"
+  },
+  "prefs": {
+    "title": "Choose your alerts",
+    "description": "Everything always appears in the app. Choose what you also want by email, SMS or WhatsApp.",
+    "always": "Always on",
+    "saved": "Your alert choices are saved",
+    "noEmail": "Add an email address to your account to get email alerts.",
+    "notSetUp": "Not set up yet",
+    "notSetUpHint": "{channel} alerts will start once your admin sets it up. Your choice is saved.",
+    "channelStatus": "Alert channels",
+    "channelStatusHint": "For admins: which channels are switched on for this business.",
+    "on": "On",
+    "off": "Not set up"
+  },
+  "email": {
+    "open": "Open in Fly Ash Bricks",
+    "footer": "You get this because of your alert choices. Change them in the app under Notifications."
+  },
+  "types": {
+    "material_low": {
+      "title": "{name} is running low",
+      "body": "Only {qty} {unit} left. Order more soon."
+    },
+    "bricks_low": {
+      "title": "Brick stock is low",
+      "body": "{name}: only {countText} bricks ready to sell."
+    },
+    "sale_created": {
+      "title": "New sale {number}",
+      "body": "{customer} bought {bricksText} bricks for {amount}."
+    },
+    "sale_voided": {
+      "title": "Bill {number} cancelled",
+      "body": "{customer} · {amount}. Reason: {reason}"
+    },
+    "payment_received": {
+      "title": "Money received: {amount}",
+      "body": "From {customer} for bill {number}."
+    },
+    "payments_overdue": {
+      "title": "{count, plural, one {# bill} other {# bills}} pending over {days} days",
+      "body": "{amount} still to collect. Open to see who owes."
+    },
+    "employee_added": {
+      "title": "New employee: {name}",
+      "body": "Added by {by}."
+    },
+    "backup_failed": {
+      "title": "Automatic backup failed",
+      "body": "Tonight's backup could not be made. Reference: {reference}"
+    }
+  },
+  "sort": {
+    "newest": "Newest first",
+    "oldest": "Oldest first"
+  }
+}

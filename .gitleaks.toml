@@ -1,0 +1,20 @@
+# Secret scanning (CI and, when gitleaks is installed, the pre-commit hook).
+# Starts from gitleaks' built-in rules; the allowlist covers only values that
+# are fake by design.
+title = "Fly Ash Bricks"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Example settings, test fixtures and CI-only values"
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''^deploy/\.env\.production\.example$''',
+  '''\.test\.tsx?$''',
+  '''^tests/''',
+  '''^e2e/''',
+]
+regexes = [
+  '''ci-only-[a-z0-9-]+''',
+]

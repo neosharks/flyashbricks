@@ -1,0 +1,60 @@
+{
+  "total": "Total",
+  "average": {
+    "day": "Daily average",
+    "month": "Monthly average"
+  },
+  "best": {
+    "day": "Best day",
+    "month": "Best month"
+  },
+  "bestValue": "{value} on {label}",
+  "change": {
+    "label": "Compared with before",
+    "up": "{percent} more than the {period} before",
+    "down": "{percent} less than the {period} before",
+    "same": "Same as the {period} before"
+  },
+  "period": {
+    "day": "{count, plural, one {day} other {# days}}",
+    "month": "{count, plural, one {month} other {# months}}"
+  },
+  "vsAverage": {
+    "above": "{percent} above average",
+    "below": "{percent} below average",
+    "same": "Same as average",
+    "nothing": "Nothing on this day"
+  },
+  "avg": "Avg",
+  "shareOfTotal": "{percent} of this {unit}",
+  "unit": {
+    "day": "day",
+    "month": "month"
+  },
+  "pointTotal": "Total",
+  "hint": "Tap or point at a bar to see details",
+  "clear": "Clear selection",
+  "fullScreen": "Full screen",
+  "openFullScreen": "Open “{title}” full screen",
+  "close": "Close",
+  "range": "Show",
+  "rangeDays": "{count} days",
+  "rangeMonths": "{count} months",
+  "table": "All numbers",
+  "column": {
+    "day": "Date",
+    "month": "Month"
+  },
+  "series": "Show or hide a line in the chart",
+  "showSeries": "Show {name}",
+  "hideSeries": "Hide {name}",
+  "selected": "{label}. {details}",
+  "brokenRate": "Broken bricks",
+  "bricks": "Bricks",
+  "stockArrived": "New stock arrived",
+  "ageing": {
+    "detail": "{bucket}: {amount} from {count, plural, one {# bill} other {# bills}} — {percent} of all money to collect",
+    "tapHint": "Tap a part of the bar to see details",
+    "share": "{percent} of total"
+  }
+}

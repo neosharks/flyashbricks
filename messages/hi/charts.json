@@ -1,0 +1,60 @@
+{
+  "total": "कुल",
+  "average": {
+    "day": "रोज़ का औसत",
+    "month": "महीने का औसत"
+  },
+  "best": {
+    "day": "सबसे अच्छा दिन",
+    "month": "सबसे अच्छा महीना"
+  },
+  "bestValue": "{label} को {value}",
+  "change": {
+    "label": "पहले के मुक़ाबले",
+    "up": "पिछले {period} से {percent} ज़्यादा",
+    "down": "पिछले {period} से {percent} कम",
+    "same": "पिछले {period} जितना ही"
+  },
+  "period": {
+    "day": "{count, plural, one {दिन} other {# दिनों}}",
+    "month": "{count, plural, one {महीने} other {# महीनों}}"
+  },
+  "vsAverage": {
+    "above": "औसत से {percent} ज़्यादा",
+    "below": "औसत से {percent} कम",
+    "same": "औसत जितना ही",
+    "nothing": "इस दिन कुछ नहीं"
+  },
+  "avg": "औसत",
+  "shareOfTotal": "इस {unit} का {percent}",
+  "unit": {
+    "day": "दिन",
+    "month": "महीने"
+  },
+  "pointTotal": "कुल",
+  "hint": "पूरी जानकारी के लिए किसी खंभे पर टैप करें",
+  "clear": "चुनाव हटाएँ",
+  "fullScreen": "पूरी स्क्रीन",
+  "openFullScreen": "“{title}” पूरी स्क्रीन पर खोलें",
+  "close": "बंद करें",
+  "range": "दिखाएँ",
+  "rangeDays": "{count} दिन",
+  "rangeMonths": "{count} महीने",
+  "table": "सारे आँकड़े",
+  "column": {
+    "day": "तारीख़",
+    "month": "महीना"
+  },
+  "series": "चार्ट में कोई हिस्सा दिखाएँ या छिपाएँ",
+  "showSeries": "{name} दिखाएँ",
+  "hideSeries": "{name} छिपाएँ",
+  "selected": "{label}। {details}",
+  "brokenRate": "टूटी ईंटें",
+  "bricks": "ईंटें",
+  "stockArrived": "नया माल आया",
+  "ageing": {
+    "detail": "{bucket}: {count, plural, one {# बिल} other {# बिलों}} से {amount} — लेने बाकी कुल पैसे का {percent}",
+    "tapHint": "पूरी जानकारी के लिए पट्टी के किसी हिस्से पर टैप करें",
+    "share": "कुल का {percent}"
+  }
+}

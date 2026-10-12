@@ -1,0 +1,168 @@
+{
+  "title": "Raw materials",
+  "description": "How much is in the yard, how long it will last, and when to order more.",
+  "add": "Add material",
+  "edit": "Edit",
+  "purchase": "New stock arrived",
+  "adjust": "Correct stock",
+  "details": "Details",
+  "inactive": "Inactive",
+  "kinds": {
+    "fly_ash": "Fly ash",
+    "cement": "Cement",
+    "sand": "Sand / stone dust",
+    "lime": "Lime",
+    "gypsum": "Gypsum",
+    "other": "Other"
+  },
+  "levels": {
+    "good": "Enough",
+    "warning": "Low – order soon",
+    "critical": "Very low – order now"
+  },
+  "stats": {
+    "materials": "Materials tracked",
+    "low": "Need ordering",
+    "lowHint": "At or below the order level",
+    "spend": "Bought this month",
+    "spendHint": "{count, plural, one {# purchase} other {# purchases}}",
+    "shortestRunway": "Runs out first",
+    "shortestRunwayHint": "{name}"
+  },
+  "runway": {
+    "label": "Will last",
+    "days": "{count, plural, =0 {less than a day} one {about # day} other {about # days}}",
+    "none": "Not enough use yet to tell",
+    "perDay": "About {qty} {unit} used each day"
+  },
+  "quantity": "On hand",
+  "threshold": "Order more at {qty} {unit}",
+  "lastRate": "Last price: {rate} per {unit}",
+  "fill": "{name} stock level",
+  "form": {
+    "createTitle": "Add a raw material",
+    "editTitle": "Edit {name}",
+    "description": "Choose the unit you count this in. It cannot be changed later.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Fly ash (NTPC)",
+    "kind": "Type",
+    "unit": "Unit",
+    "unitLocked": "The unit cannot be changed after adding.",
+    "lowThreshold": "Order more when it falls to",
+    "lowThresholdHint": "You get an email when stock reaches this amount.",
+    "capacity": "Storage size",
+    "capacityHint": "Size of the silo or shed. Used only for the gauge.",
+    "opening": "How much is in the yard now",
+    "openingHint": "Leave empty if none.",
+    "active": "In use (turn off if you no longer buy this)",
+    "create": "Add material",
+    "save": "Save changes",
+    "moreOptions": "More options",
+    "lessOptions": "Fewer options"
+  },
+  "purchaseForm": {
+    "title": "New stock of {name} arrived",
+    "description": "This adds to the stock in the yard.",
+    "quantity": "How much arrived",
+    "cost": "Total bill amount",
+    "costHint": "Including transport. Leave 0 if not known.",
+    "supplier": "Supplier",
+    "date": "Date",
+    "note": "Note",
+    "submit": "Add to stock",
+    "rateHint": "≈ {rate} per {unit}"
+  },
+  "adjustForm": {
+    "title": "Correct stock of {name}",
+    "description": "Use this after counting stock, or if some was spilled or wasted. The reason is saved.",
+    "mode": "What do you want to do?",
+    "modes": {
+      "add": "Add some",
+      "remove": "Remove some",
+      "set": "I counted it"
+    },
+    "quantity": "How much",
+    "counted": "Amount counted",
+    "current": "App shows: {qty} {unit}",
+    "reason": "Why?",
+    "reasonPlaceholder": "e.g. Counted the stock",
+    "date": "Date",
+    "submit": "Save correction"
+  },
+  "toasts": {
+    "created": "Material added",
+    "updated": "Changes saved",
+    "purchased": "Stock added",
+    "adjusted": "Stock corrected"
+  },
+  "movementTypes": {
+    "purchase": "New stock",
+    "consumption": "Used for bricks",
+    "consumption_reversal": "Returned (bricks entry cancelled)",
+    "adjustment": "Stock correction"
+  },
+  "movements": {
+    "title": "Stock history",
+    "columns": {
+      "date": "Date",
+      "type": "Type",
+      "change": "Amount",
+      "balance": "Left after",
+      "details": "Details",
+      "by": "By"
+    },
+    "typeFilter": "Filter by type",
+    "all": "All",
+    "empty": "No stock movements in this period.",
+    "searchPlaceholder": "Search supplier or note",
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "biggestIn": "Biggest amount in",
+      "biggestOut": "Biggest amount out",
+      "costHigh": "Costliest purchase first"
+    },
+    "groups": {
+      "label": "Group by",
+      "none": "No grouping",
+      "month": "Month",
+      "supplier": "Supplier"
+    },
+    "groupColumns": {
+      "purchases": "Purchases",
+      "purchased": "Bought",
+      "spend": "Spent",
+      "used": "Used for bricks",
+      "adjusted": "Corrections",
+      "avgRate": "Average price"
+    },
+    "noSupplier": "No supplier entered",
+    "perUnit": "{rate} per {unit}",
+    "costSortHint": "Showing purchases so they can be ordered by cost."
+  },
+  "chart": {
+    "title": "Used each day (last 30 days)",
+    "used": "Used",
+    "empty": "Nothing used in the last 30 days."
+  },
+  "emptyTitle": "No raw materials yet",
+  "emptyBody": "Add fly ash, cement, sand and the rest so the app can track stock and warn you before you run out.",
+  "noAccessWrite": "You can see stock but cannot change it.",
+  "list": {
+    "searchPlaceholder": "Search materials",
+    "sort": {
+      "level": "Needs ordering first",
+      "daysLeft": "Runs out soonest",
+      "quantity": "Emptiest first",
+      "name": "Name (A–Z)"
+    },
+    "show": {
+      "label": "Show",
+      "active": "In use",
+      "low": "Need ordering",
+      "inactive": "Not in use",
+      "all": "All"
+    },
+    "noMatch": "No material matches."
+  }
+}

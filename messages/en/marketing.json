@@ -1,0 +1,403 @@
+{
+  "keywords": "fly ash brick software, brick factory management software, brick plant ERP India, fly ash brick billing, GST invoice for bricks, brick stock management, labour attendance app, brick plant accounting, Hindi business app",
+  "meta": {
+    "home": {
+      "title": "Fly Ash Bricks — Factory Management Software for Brick Plants in India",
+      "description": "Run your fly ash brick factory from your phone: raw material stock, daily production, brick stock, sales with GST invoices, customer dues, staff attendance and wages — in English and Hindi."
+    },
+    "features": {
+      "title": "Features — Fly Ash Bricks factory software",
+      "description": "Raw materials with days-left forecast, production with automatic material use, live brick stock, GST invoices, customer dues, attendance and wages, alerts, backups — every feature explained."
+    },
+    "security": {
+      "title": "Security and data safety — Fly Ash Bricks",
+      "description": "Per-section access for every employee, a full activity log, encrypted backups, separate data for every company, and hosting on your own server."
+    },
+    "contact": {
+      "title": "Book a free demo — Fly Ash Bricks",
+      "description": "See Fly Ash Bricks with your own plant's numbers. Write to the NeoSharks team to set up a demo."
+    }
+  },
+  "nav": {
+    "label": "Main",
+    "home": "Home",
+    "features": "Features",
+    "security": "Security",
+    "faq": "Questions",
+    "contact": "Contact",
+    "signIn": "Sign in",
+    "demo": "Book a demo",
+    "language": "हिन्दी",
+    "menu": "Menu"
+  },
+  "hero": {
+    "eyebrow": "Made for fly ash brick plants in India",
+    "title": "Your whole brick factory, in one simple app",
+    "subtitle": "Raw material, bricks made, stock, sales, money to collect and your workers' attendance — always up to date on your phone, in English or Hindi.",
+    "primary": "Book a free demo",
+    "secondary": "See all features",
+    "points": ["Works on any phone", "English & हिन्दी", "GST invoices or simple bills"],
+    "phoneAlt": "The dashboard on a phone: quick actions, low-stock warnings and bricks ready to sell",
+    "desktopAlt": "The dashboard on a computer: today's figures and charts for bricks made and sales"
+  },
+  "facts": [
+    { "value": "EN + हि", "label": "Every screen in English and Hindi" },
+    { "value": "1 tap", "label": "To mark a worker present" },
+    { "value": "₹", "label": "GST invoices, lakh and crore" },
+    { "value": "0", "label": "Registers to keep" }
+  ],
+  "pain": {
+    "title": "From registers and guesswork to one clear picture",
+    "subtitle": "Most yards run on notebooks, phone calls and memory. That works — until cement runs out mid-shift or a customer's dues are forgotten.",
+    "beforeTitle": "Without the app",
+    "before": [
+      "Cement runs out and production stops for a day",
+      "Nobody is sure how many bricks are really in the yard",
+      "Old dues are forgotten; collection depends on memory",
+      "Attendance and advances are argued over at month end",
+      "The owner calls the supervisor for every number"
+    ],
+    "afterTitle": "With Fly Ash Bricks",
+    "after": [
+      "Days of material left, with an alert before it runs out",
+      "Live brick stock — every sale takes bricks out automatically",
+      "Every pending amount, and for how many days",
+      "Attendance, overtime and wages worked out for you",
+      "The whole factory on the owner's phone, any time"
+    ]
+  },
+  "showcase": {
+    "title": "See what you get",
+    "subtitle": "Real screens from the app, with a demo factory's data.",
+    "dashboard": {
+      "eyebrow": "Dashboard",
+      "title": "Today's factory at a glance",
+      "body": "Open the app and see what needs attention first: material running low, bricks ready to sell, today's production and the money customers owe.",
+      "points": [
+        "Quick buttons for the four things done every day",
+        "Charts for bricks made and sales, with plain-language insights",
+        "Low-stock warnings before they become a problem"
+      ],
+      "alt": "Dashboard with quick actions, warnings and today's figures"
+    },
+    "sales": {
+      "eyebrow": "Sales & dues",
+      "title": "Every bill and every rupee owed",
+      "body": "Make a bill in a few taps. Part payments, delivery charges and discounts are handled. Pending amounts show how long they have been waiting.",
+      "points": [
+        "Customers found by any of their phone numbers",
+        "Brick price per sale, compared with your usual rate",
+        "Filters by date, status and customer; CSV export"
+      ],
+      "alt": "Sales list with paid, partly paid and unpaid bills"
+    },
+    "materials": {
+      "eyebrow": "Raw materials",
+      "title": "Know how many days your material will last",
+      "body": "Fly ash, cement, stone dust, lime and gypsum — each with its stock level, purchases and a forecast based on how fast you use it.",
+      "points": [
+        "Material is used automatically from your brick mix",
+        "Alerts to the right people when stock gets low",
+        "Purchase history with supplier and price"
+      ],
+      "alt": "Raw materials with stock gauges and days left"
+    },
+    "production": {
+      "eyebrow": "Production & stock",
+      "title": "Bricks made, broken and ready to sell",
+      "body": "Enter the day's good and broken bricks. Stock goes up, material goes down, and the defect rate is tracked for you.",
+      "points": [
+        "Live stock per brick type",
+        "\"Can make N more\" from what is in the yard",
+        "Mistakes can be voided, with everything reversed"
+      ],
+      "alt": "Production entries with good and broken bricks"
+    },
+    "staff": {
+      "eyebrow": "Staff & wages",
+      "title": "Attendance in one tap, wages without arguments",
+      "body": "Labourers need no login. The supervisor marks the day — present, half day, absent, leave — and the app works out wages, overtime and advances.",
+      "points": [
+        "Daily, monthly or per-1,000-brick wages",
+        "Advances and deductions recorded as they happen",
+        "Money paid to each worker over time"
+      ],
+      "alt": "Attendance sheet with colour-coded status for each worker"
+    },
+    "invoice": {
+      "eyebrow": "Invoices",
+      "title": "Proper GST invoices — or a simple bill",
+      "body": "If you are GST-registered, invoices show CGST and SGST, or IGST for other states, with the amount in words. If not, you get a clean, simple bill.",
+      "points": [
+        "Invoice numbers per financial year",
+        "Print or share as PDF from the phone",
+        "GSTIN checked before it is saved"
+      ],
+      "alt": "A printable invoice with GST and amount in words"
+    }
+  },
+  "languages": {
+    "title": "Hindi for the yard, English for the office",
+    "body": "Every person picks their own language. Names are kept in both scripts — type in one and the other is filled in for you.",
+    "en": "English",
+    "hi": "हिन्दी",
+    "altEn": "The sales screen in English",
+    "altHi": "The sales screen in Hindi"
+  },
+  "mobile": {
+    "title": "Made for the phone in your pocket",
+    "body": "Add it to the home screen and it opens like any other app. It works on a computer too — the same account, the same data.",
+    "points": [
+      "Big buttons and simple words — no training needed",
+      "Light and dark mode, larger text and bold text options",
+      "Keeps working on a slow yard connection"
+    ],
+    "alt": "The dashboard in dark mode on a phone"
+  },
+  "trust": {
+    "title": "Your data stays yours",
+    "body": "Each employee sees only the sections you allow. Every change is recorded. Backups are locked with a password and run every night.",
+    "points": [
+      "Per-section access: none, view or edit",
+      "Activity log of who changed what, and when",
+      "Encrypted nightly backups"
+    ],
+    "link": "How we keep it safe"
+  },
+  "how": {
+    "title": "Start in an afternoon",
+    "one": {
+      "title": "Add your materials and brick mix",
+      "body": "Enter what is in the yard today and how much of each goes into 1,000 bricks."
+    },
+    "two": {
+      "title": "Add your team",
+      "body": "Give logins to those who use the app. Labourers are kept as staff for attendance and wages — no login needed."
+    },
+    "three": {
+      "title": "Record the day",
+      "body": "Bricks made, sales and attendance. The app does the counting, stock and reminders."
+    }
+  },
+  "faq": {
+    "title": "Common questions",
+    "hindi": {
+      "q": "Does it work in Hindi?",
+      "a": "Yes. Every screen is in English and Hindi, and names can be saved in both. Each person picks their own language."
+    },
+    "gst": {
+      "q": "Do I need GST registration?",
+      "a": "No. Without GST you get a simple bill. If you are registered, invoices show CGST and SGST, or IGST for other states."
+    },
+    "phone": {
+      "q": "Does it need a computer?",
+      "a": "No. It works on any smartphone and can be added to the home screen like an app. It also works on a computer."
+    },
+    "labour": {
+      "q": "Do labourers need a login?",
+      "a": "No. Supervisors mark their attendance and wages. Only people who use the app themselves need a login."
+    },
+    "many": {
+      "q": "I run more than one plant. Can I use it?",
+      "a": "Yes. Each company's data is kept completely separate, and each has its own admins, staff and settings."
+    },
+    "data": {
+      "q": "Where is my data kept?",
+      "a": "On your own server, with password-locked backups every night. It can move to the cloud later without changes."
+    },
+    "price": {
+      "q": "How much does it cost?",
+      "a": "It depends on the size of your plant and how many people will use it. Book a demo and we will share a quote."
+    }
+  },
+  "cta": {
+    "title": "See it with your own plant's numbers",
+    "body": "A short demo on a call. We set up your materials, brick types and a few customers so you can see your own yard in the app.",
+    "primary": "Book a free demo",
+    "secondary": "Sign in"
+  },
+  "features": {
+    "eyebrow": "Features",
+    "title": "Everything a brick yard needs, nothing it does not",
+    "subtitle": "Every part of the app, from the first bag of cement to the last rupee collected.",
+    "jump": "Jump to",
+    "groups": {
+      "manufacturing": {
+        "title": "Manufacturing",
+        "body": "Raw material in, bricks out — counted for you.",
+        "alt": "Raw materials with stock gauges"
+      },
+      "selling": {
+        "title": "Selling",
+        "body": "Bills, invoices, customers and the money they owe.",
+        "alt": "A sale with lines, payments and the amount still due"
+      },
+      "people": {
+        "title": "People",
+        "body": "Workers, attendance, wages and who can do what in the app.",
+        "alt": "A worker's page with attendance calendar and money paid"
+      },
+      "control": {
+        "title": "Control",
+        "body": "Alerts, history and backups, so nothing slips.",
+        "alt": "Notifications inbox with low-stock and payment alerts"
+      },
+      "everyone": {
+        "title": "For everyone",
+        "body": "Simple enough for anyone on the team.",
+        "alt": "The app in Hindi on a phone"
+      }
+    },
+    "items": {
+      "materials": {
+        "title": "Raw material stock",
+        "body": "Fly ash, cement, stone dust, lime, gypsum and anything else — with gauges, purchases, adjustments and a days-left forecast."
+      },
+      "recipe": {
+        "title": "Brick mix (recipe)",
+        "body": "Set how much of each material goes into 1,000 bricks of each type. Production takes it out automatically."
+      },
+      "production": {
+        "title": "Daily production",
+        "body": "Good and broken bricks per type and day, with the defect rate and a void that reverses everything."
+      },
+      "stock": {
+        "title": "Brick stock",
+        "body": "Live stock per brick type, \"can make N more\" from current material, and the full movement history."
+      },
+      "sales": {
+        "title": "Sales",
+        "body": "Bills with several lines, delivery, discount and the price per brick for each sale. Stock goes down automatically."
+      },
+      "invoices": {
+        "title": "Invoices with or without GST",
+        "body": "CGST/SGST or IGST worked out from the customer's state, numbered per financial year, amount in words in English or Hindi."
+      },
+      "customers": {
+        "title": "Customers",
+        "body": "Found by any of their phone numbers, with everything they bought, paid and still owe."
+      },
+      "dues": {
+        "title": "Money to collect",
+        "body": "Part payments over time, every pending amount, and how many days it has been waiting."
+      },
+      "attendance": {
+        "title": "Attendance",
+        "body": "One tap per worker per day: present, half day, absent, leave or holiday, with overtime and bricks made."
+      },
+      "wages": {
+        "title": "Wages & payments",
+        "body": "Daily, monthly or per-brick wages, advances, bonuses and deductions, and a chart of money paid over time."
+      },
+      "logins": {
+        "title": "Logins & access",
+        "body": "Only admins create logins. Each section can be none, view or edit, per person. Temporary passwords expire in 3 days."
+      },
+      "dashboard": {
+        "title": "Dashboard & charts",
+        "body": "Today's figures, quick actions and charts you can open full screen, tap for details, with plain-language insights."
+      },
+      "alerts": {
+        "title": "Alerts",
+        "body": "Low stock, new sales, payments and old dues — in the app, by email, SMS or WhatsApp. Tap to open the record."
+      },
+      "activity": {
+        "title": "Activity log",
+        "body": "Every change, by whom and when, plus sign-in history for every login."
+      },
+      "backups": {
+        "title": "Backups & export",
+        "body": "Password-locked backups every night, a download any time, and copies by email if you want them."
+      },
+      "languages": {
+        "title": "English & Hindi",
+        "body": "Every screen in both. Names in both scripts, filled in automatically as you type."
+      },
+      "phone": {
+        "title": "Phone first, works on computers",
+        "body": "Installs on the home screen like an app. Big buttons, clear words, and it keeps working on a weak connection."
+      },
+      "comfort": {
+        "title": "Comfortable to read",
+        "body": "Light and dark mode, larger text, bold text, and cartoon pictures for every worker until a photo is added."
+      }
+    }
+  },
+  "security": {
+    "eyebrow": "Security",
+    "title": "Built to keep your business data safe",
+    "subtitle": "Your sales, dues and wages are private. Here is how the app protects them — in plain words.",
+    "items": {
+      "access": {
+        "title": "Each person sees only what you allow",
+        "body": "For every section — materials, sales, staff and more — choose none, view or edit for each employee. Nobody can give themselves more."
+      },
+      "company": {
+        "title": "Every company is separate",
+        "body": "If you run more than one plant, each company's data is kept apart. One company can never see another's."
+      },
+      "logins": {
+        "title": "No public sign-up",
+        "body": "Only an admin can create a login. New people get a temporary password that must be changed and expires in 3 days."
+      },
+      "sessions": {
+        "title": "Instant control over logins",
+        "body": "Disable someone and they are out on their next tap. Anyone can sign out of all their devices in one go."
+      },
+      "attempts": {
+        "title": "Guessing is stopped",
+        "body": "Repeated wrong passwords are slowed down and recorded. Every sign-in shows its time and device."
+      },
+      "activity": {
+        "title": "Every change is recorded",
+        "body": "The activity log shows who changed what and when — sales, payments, stock, wages and access."
+      },
+      "backups": {
+        "title": "Locked backups every night",
+        "body": "Backups are encrypted with your password before they are saved or emailed. Photos are left out to keep them small."
+      },
+      "hosting": {
+        "title": "On your own server",
+        "body": "The app runs on a server you control, over HTTPS. It can move to the cloud later without changes."
+      }
+    },
+    "neverTitle": "What we never do",
+    "never": [
+      "Show ads or sell your data",
+      "Track your visitors with third-party scripts",
+      "Store pages or business data on a shared phone after sign-out"
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Book a free demo",
+    "subtitle": "Tell us a little about your plant and we will show you the app with your own materials, brick types and customers.",
+    "emailTitle": "Write to us",
+    "emailBody": "The quickest way to reach the team.",
+    "emailSubject": "Fly Ash Bricks demo",
+    "websiteTitle": "NeoSharks",
+    "websiteBody": "The team that builds Fly Ash Bricks.",
+    "websiteLink": "Visit neosharks.in",
+    "includeTitle": "Helpful to include",
+    "include": [
+      "Your plant's name and town",
+      "Roughly how many bricks you make in a day",
+      "How many people will use the app",
+      "A phone number and a good time to call"
+    ],
+    "nextTitle": "What happens next",
+    "next": [
+      "We call you to understand how your yard works",
+      "We set up a demo with your materials and brick types",
+      "You try it on your own phone"
+    ],
+    "already": "Already using Fly Ash Bricks?",
+    "signIn": "Sign in"
+  },
+  "footer": {
+    "tagline": "Fly ash brick factory management software · Made in India",
+    "product": "Product",
+    "company": "Company",
+    "rights": "© {year} NeoSharks. All rights reserved."
+  }
+}

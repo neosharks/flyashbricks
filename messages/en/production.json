@@ -1,0 +1,232 @@
+{
+  "title": "Bricks made",
+  "description": "Write down the bricks made each day. Material used is taken from stock automatically.",
+  "logButton": "Add bricks made",
+  "summary": {
+    "today": "Made today",
+    "todayHint": "{count, plural, =0 {no broken bricks} one {# broken} other {# broken}}",
+    "month": "Made this month",
+    "monthHint": "Good bricks only",
+    "defectRate": "Broken bricks",
+    "defectRateHint": "Of all bricks pressed in this period",
+    "inRange": "In this period",
+    "inRangeHint": "{count, plural, one {# entry} other {# entries}}"
+  },
+  "chart": {
+    "title": "Bricks made each day (last 30 days)",
+    "good": "Good bricks",
+    "defective": "Broken bricks",
+    "empty": "No bricks recorded in the last 30 days."
+  },
+  "ranges": {
+    "label": "Period",
+    "today": "Today",
+    "7d": "7 days",
+    "30d": "30 days",
+    "month": "This month",
+    "all": "All",
+    "custom": "Choose dates",
+    "from": "From",
+    "to": "To",
+    "apply": "Show"
+  },
+  "brickFilter": {
+    "label": "Brick type",
+    "all": "All types"
+  },
+  "columns": {
+    "date": "Date",
+    "brickType": "Brick type",
+    "good": "Good",
+    "defective": "Broken",
+    "materials": "Material used",
+    "by": "Entered by",
+    "actions": "Actions"
+  },
+  "cancelled": "Cancelled",
+  "cancelledReason": "Cancelled: {reason}",
+  "form": {
+    "title": "Add bricks made",
+    "description": "Material used is calculated from the brick mix and taken out of stock.",
+    "date": "Date",
+    "brickType": "Brick type",
+    "good": "Good bricks",
+    "defective": "Broken / defective bricks",
+    "note": "Note",
+    "notePlaceholder": "e.g. Machine 2, night shift",
+    "more": "More options",
+    "less": "Fewer options",
+    "previewTitle": "Material that will be used",
+    "previewEmpty": "Enter the number of bricks to see the material used.",
+    "noRecipe": "This brick type has no mix set, so no material will be taken from stock.",
+    "short": "Not enough {name}: needs {need} {unit}, app shows {have} {unit}. Add the new stock first.",
+    "available": "{have} {unit} in stock",
+    "submit": "Save",
+    "noProducts": "Add a brick type first, on the Brick stock page.",
+    "goToStock": "Go to Brick stock"
+  },
+  "toasts": {
+    "logged": "Saved. Stock updated.",
+    "voided": "Entry cancelled. Material and stock put back."
+  },
+  "void": {
+    "button": "Cancel entry",
+    "title": "Cancel this entry?",
+    "description": "The material goes back to stock and the good bricks are removed from stock. Use this only for a wrong entry.",
+    "reason": "Why?",
+    "reasonPlaceholder": "e.g. Entered twice",
+    "confirm": "Cancel entry",
+    "keep": "Keep it"
+  },
+  "emptyTitle": "No bricks recorded yet",
+  "emptyBody": "Each day, add how many good and broken bricks were made.",
+  "readOnly": "You can see this page but cannot add entries.",
+  "stock": {
+    "title": "Brick stock",
+    "description": "Bricks ready to sell, and how many more you can make with the material in the yard.",
+    "total": "Ready to sell",
+    "totalHint": "All brick types",
+    "readyToSell": "Ready to sell",
+    "canMake": "Material for about {count} more",
+    "canMakeNone": "No mix set",
+    "limitedBy": "{name} will run out first",
+    "lowAt": "Alert when below {count}",
+    "levels": {
+      "good": "Enough stock",
+      "warning": "Stock getting low",
+      "critical": "Very low stock"
+    },
+    "inactive": "Not in use",
+    "addType": "Add brick type",
+    "editType": "Edit",
+    "correct": "Correct stock",
+    "mix": "Mix for {count, plural, one {# brick} other {# bricks}}",
+    "rate": "Usual price: {rate} per brick",
+    "historyTitle": "Stock history",
+    "emptyTitle": "No brick types yet",
+    "emptyBody": "Add the bricks you make (for example \"Standard 9 inch\") with their mix, so stock and material are counted automatically.",
+    "movementTypes": {
+      "production": "Bricks made",
+      "production_void": "Bricks entry cancelled",
+      "sale": "Sold",
+      "sale_void": "Sale cancelled",
+      "adjustment": "Stock correction"
+    },
+    "movements": {
+      "columns": {
+        "date": "Date",
+        "brickType": "Brick type",
+        "type": "What happened",
+        "change": "Bricks",
+        "balance": "Left after",
+        "note": "Note",
+        "by": "By"
+      },
+      "typeFilter": "What happened",
+      "all": "All",
+      "empty": "No stock changes in this period.",
+      "searchPlaceholder": "Search notes",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first",
+        "biggestIn": "Most bricks added",
+        "biggestOut": "Most bricks taken out"
+      },
+      "groups": {
+        "label": "Group by",
+        "none": "No grouping",
+        "type": "What happened",
+        "month": "Month"
+      },
+      "groupColumns": {
+        "changes": "Changes",
+        "in": "Added",
+        "out": "Taken out",
+        "net": "Net change"
+      }
+    },
+    "canMakeTotal": "Can still make",
+    "canMakeTotalHint": "About, with material in the yard",
+    "cards": {
+      "searchPlaceholder": "Search brick types",
+      "sort": {
+        "name": "Name (A–Z)",
+        "stockHigh": "Most stock",
+        "stockLow": "Least stock",
+        "canMake": "Can make most"
+      },
+      "noMatch": "No brick type matches."
+    }
+  },
+  "productForm": {
+    "createTitle": "Add a brick type",
+    "editTitle": "Edit {name}",
+    "description": "The mix tells the app how much material each batch of bricks uses.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Standard 9 inch",
+    "size": "Size",
+    "sizePlaceholder": "e.g. 230 × 110 × 75 mm",
+    "rate": "Usual selling price per brick",
+    "lowStock": "Alert when stock falls below",
+    "lowStockHint": "Number of bricks. 0 means no alert.",
+    "mixTitle": "Mix (material used)",
+    "batch": "For every",
+    "batchSuffix": "bricks",
+    "material": "Material",
+    "amount": "Amount",
+    "addMaterial": "Add material",
+    "removeMaterial": "Remove {name}",
+    "choose": "Choose…",
+    "noMaterials": "Add raw materials first to set a mix.",
+    "active": "In use (turn off if you stopped making this)",
+    "create": "Add brick type",
+    "save": "Save changes",
+    "created": "Brick type added",
+    "updated": "Changes saved"
+  },
+  "stockForm": {
+    "title": "Correct stock of {name}",
+    "description": "Use this after counting bricks, or when bricks break in the yard. The reason is saved.",
+    "mode": "What do you want to do?",
+    "modes": {
+      "add": "Add bricks",
+      "remove": "Remove bricks",
+      "set": "I counted them"
+    },
+    "quantity": "Number of bricks",
+    "counted": "Bricks counted",
+    "current": "App shows: {count}",
+    "reason": "Why?",
+    "reasonPlaceholder": "e.g. Broken while loading",
+    "date": "Date",
+    "submit": "Save correction",
+    "done": "Stock corrected"
+  },
+  "table": {
+    "searchPlaceholder": "Search by person, brick type or note",
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "mostGood": "Most good bricks",
+      "leastGood": "Fewest good bricks",
+      "mostBroken": "Most broken bricks",
+      "brickType": "Brick type (A–Z)"
+    },
+    "groups": {
+      "label": "Group by",
+      "none": "No grouping",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month",
+      "brickType": "Brick type",
+      "person": "Person"
+    },
+    "groupColumns": {
+      "entries": "Entries",
+      "good": "Good bricks",
+      "broken": "Broken",
+      "brokenRate": "Broken %"
+    },
+    "groupHint": "Tap a row to see its entries."
+  }
+}

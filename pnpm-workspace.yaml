@@ -1,0 +1,21 @@
+# pnpm blocks package lifecycle scripts by default. Only these need one —
+# native binaries, and the MongoDB binary used by integration tests.
+allowBuilds:
+  esbuild: true
+  mongodb-memory-server: true
+  unrs-resolver: true
+  sharp: true
+  # Pulled in by next-intl's optional message-extraction tooling, which this
+  # app does not use. Their prebuilt binaries ship as optional dependencies.
+  '@parcel/watcher': false
+  '@swc/core': false
+
+# Security floors for transitive packages (pnpm audit). Auth.js only loads
+# nodemailer for its email provider, which this app does not use, so newer
+# majors are safe for it.
+overrides:
+  nodemailer: '>=10.0.6'
+
+peerDependencyRules:
+  allowedVersions:
+    nodemailer: '10'

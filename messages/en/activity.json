@@ -1,0 +1,108 @@
+{
+  "title": "Activity log",
+  "description": "Every change made in the app: who did it, and when.",
+  "searchPlaceholder": "Search by person",
+  "columns": {
+    "when": "When",
+    "who": "Who",
+    "what": "What",
+    "details": "Details"
+  },
+  "filters": {
+    "label": "Filter by area",
+    "all": "All",
+    "User": "Employees",
+    "RawMaterial": "Raw materials",
+    "ProductionEntry": "Production",
+    "Product": "Brick stock",
+    "Sale": "Sales",
+    "Customer": "Customers",
+    "Organization": "Settings",
+    "Backup": "Backups",
+    "StaffMember": "Staff"
+  },
+  "system": "System",
+  "emptyTitle": "Nothing recorded yet",
+  "emptyBody": "Changes appear here as soon as anyone makes one.",
+  "open": "Open",
+  "actions": {
+    "user": {
+      "create": "Added an employee",
+      "update": "Edited an employee",
+      "access_change": "Changed an employee's access",
+      "password_reset": "Reset an employee's password",
+      "password_change": "Changed their own password",
+      "disable": "Disabled an employee",
+      "enable": "Enabled an employee",
+      "sign_out_everywhere": "Signed an employee out everywhere",
+      "photo_change": "Changed a profile photo",
+      "photo_remove": "Removed a profile photo"
+    },
+    "material": {
+      "create": "Added a raw material",
+      "update": "Edited a raw material",
+      "purchase": "Recorded a raw material purchase",
+      "adjust": "Adjusted raw material stock"
+    },
+    "product": {
+      "create": "Added a brick type",
+      "update": "Edited a brick type",
+      "adjust": "Adjusted brick stock"
+    },
+    "production": {
+      "create": "Recorded production",
+      "void": "Voided a production entry"
+    },
+    "sale": {
+      "create": "Recorded a sale",
+      "payment": "Recorded money received",
+      "void": "Cancelled a bill",
+      "export": "Downloaded sales as CSV"
+    },
+    "customer": {
+      "create": "Added a customer",
+      "update": "Edited a customer",
+      "export": "Downloaded customers as CSV"
+    },
+    "settings": {
+      "update": "Updated business settings"
+    },
+    "backup": {
+      "download": "Downloaded a backup",
+      "email": "Emailed a backup",
+      "scheduled": "Automatic backup"
+    },
+    "staff": {
+      "create": "Added a staff member",
+      "update": "Edited a staff member",
+      "photo_change": "Changed a staff member's photo"
+    },
+    "attendance": {
+      "mark": "Marked attendance"
+    },
+    "staff_payment": {
+      "create": "Recorded a staff payment",
+      "void": "Cancelled a staff payment",
+      "export": "Downloaded wages as CSV"
+    }
+  },
+  "person": {
+    "showing": "Changes by {name}",
+    "clear": "Show everyone"
+  },
+  "sort": {
+    "newest": "Newest first",
+    "oldest": "Oldest first"
+  },
+  "groups": {
+    "label": "Group by",
+    "none": "No grouping",
+    "person": "Person",
+    "area": "Area",
+    "day": "Day"
+  },
+  "groupColumns": {
+    "changes": "Changes",
+    "lastAt": "Latest"
+  }
+}

@@ -1,0 +1,26 @@
+node_modules
+.next
+out
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+playwright-report
+test-results
+blob-report
+.playwright
+
+# Mongo replica-set key; generated per server, never committed.
+deploy/mongo-keyfile
+
+storage
+
+# Backup files hold every record of an organisation.
+*.fabk
+*.json.gz
+backup*.json

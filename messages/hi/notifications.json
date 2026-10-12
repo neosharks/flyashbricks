@@ -1,0 +1,99 @@
+{
+  "title": "सूचनाएँ",
+  "description": "स्टॉक, बिक्री, भुगतान और आपकी टीम से जुड़ी सूचनाएँ। खोलने के लिए किसी पर टैप करें।",
+  "bell": "सूचनाएँ",
+  "bellUnread": "सूचनाएँ, {count} नहीं पढ़ी गईं",
+  "markAllRead": "सब पढ़ा हुआ करें",
+  "markedAllRead": "सभी सूचनाएँ पढ़ी हुई कर दी गईं",
+  "markUnread": "न पढ़ा हुआ करें",
+  "viewAll": "सभी सूचनाएँ देखें",
+  "settings": "सूचनाएँ चुनें",
+  "empty": "अभी कोई सूचना नहीं।",
+  "emptyUnread": "आपने सब देख लिया है।",
+  "emptyHint": "कम स्टॉक, बिक्री और भुगतान की सूचनाएँ यहाँ दिखेंगी।",
+  "unread": "नहीं पढ़ी",
+  "new": "नई",
+  "opening": "खुल रहा है…",
+  "openFallback": "अगर कुछ न हो तो यहाँ टैप करें।",
+  "filters": {
+    "label": "दिखाएँ",
+    "all": "सभी",
+    "unread": "नहीं पढ़ी",
+    "categoryLabel": "प्रकार"
+  },
+  "categories": {
+    "stock": "स्टॉक",
+    "sales": "बिक्री",
+    "payments": "भुगतान",
+    "team": "टीम",
+    "system": "सिस्टम"
+  },
+  "categoryHints": {
+    "stock": "कच्चा माल या ईंटें कम होने पर",
+    "sales": "नई बिक्री और रद्द बिल",
+    "payments": "पैसे मिले, बहुत दिनों से बाकी बिल",
+    "team": "नए कर्मचारी",
+    "system": "बैकअप में दिक्कत"
+  },
+  "channels": {
+    "inApp": "ऐप में",
+    "email": "ईमेल",
+    "sms": "SMS",
+    "whatsapp": "WhatsApp"
+  },
+  "prefs": {
+    "title": "अपनी सूचनाएँ चुनें",
+    "description": "सब कुछ हमेशा ऐप में दिखता है। चुनें कि ईमेल, SMS या WhatsApp पर भी क्या चाहिए।",
+    "always": "हमेशा चालू",
+    "saved": "आपकी पसंद सहेज ली गई",
+    "noEmail": "ईमेल पर सूचना के लिए अपने खाते में ईमेल पता जोड़ें।",
+    "notSetUp": "अभी चालू नहीं",
+    "notSetUpHint": "एडमिन के चालू करने पर {channel} सूचनाएँ आने लगेंगी। आपकी पसंद सहेजी हुई है।",
+    "channelStatus": "सूचना के माध्यम",
+    "channelStatusHint": "एडमिन के लिए: इस व्यापार में कौन-से माध्यम चालू हैं।",
+    "on": "चालू",
+    "off": "चालू नहीं"
+  },
+  "email": {
+    "open": "फ्लाई ऐश ब्रिक्स में खोलें",
+    "footer": "यह आपकी चुनी हुई सूचनाओं के कारण आया है। इन्हें ऐप में सूचनाएँ में जाकर बदलें।"
+  },
+  "types": {
+    "material_low": {
+      "title": "{name} कम हो रहा है",
+      "body": "सिर्फ़ {qty} {unit} बचा है। जल्दी और मँगवाएँ।"
+    },
+    "bricks_low": {
+      "title": "ईंट स्टॉक कम है",
+      "body": "{name}: बेचने को सिर्फ़ {countText} ईंटें तैयार।"
+    },
+    "sale_created": {
+      "title": "नई बिक्री {number}",
+      "body": "{customer} ने {bricksText} ईंटें {amount} में खरीदीं।"
+    },
+    "sale_voided": {
+      "title": "बिल {number} रद्द",
+      "body": "{customer} · {amount}। कारण: {reason}"
+    },
+    "payment_received": {
+      "title": "पैसे मिले: {amount}",
+      "body": "{customer} से, बिल {number} के लिए।"
+    },
+    "payments_overdue": {
+      "title": "{count, plural, one {# बिल} other {# बिल}} {days} दिन से ज़्यादा से बाकी",
+      "body": "{amount} अभी लेने बाकी हैं। किस पर बाकी है, देखने के लिए खोलें।"
+    },
+    "employee_added": {
+      "title": "नया कर्मचारी: {name}",
+      "body": "{by} ने जोड़ा।"
+    },
+    "backup_failed": {
+      "title": "अपने-आप होने वाला बैकअप नहीं बना",
+      "body": "आज रात का बैकअप नहीं बन सका। संदर्भ: {reference}"
+    }
+  },
+  "sort": {
+    "newest": "नई पहले",
+    "oldest": "पुरानी पहले"
+  }
+}

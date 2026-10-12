@@ -1,0 +1,48 @@
+{
+  "title": "Business settings",
+  "description": "Your company details. They are printed on every invoice.",
+  "saved": "Settings saved. New invoices will use these details.",
+  "business": {
+    "title": "Your business",
+    "hint": "Name and address shown at the top of invoices.",
+    "name": "Business name",
+    "legalName": "Registered name",
+    "legalNameHint": "Only if it is different from the business name, e.g. \"Shree Ganesh Bricks Pvt Ltd\".",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "city": "City / town",
+    "pincode": "PIN code",
+    "state": "State",
+    "chooseState": "Choose state"
+  },
+  "gst": {
+    "title": "GST",
+    "hint": "Only needed if your business is registered for GST.",
+    "question": "Is your business registered for GST?",
+    "yes": "Yes, I have GST",
+    "no": "No GST",
+    "gstin": "GSTIN",
+    "gstinHint": "15 characters, as on your GST certificate.",
+    "rate": "GST rate on bricks",
+    "hsn": "HSN code",
+    "hsnHint": "Fly ash bricks are usually 6815. Ask your accountant if unsure.",
+    "noGstNote": "Invoices will be made without GST."
+  },
+  "payment": {
+    "title": "How customers pay you",
+    "hint": "Printed at the bottom of invoices so customers can pay easily.",
+    "upi": "UPI ID",
+    "upiHint": "Customers can pay to this from any UPI app.",
+    "accountName": "Account holder name",
+    "bankName": "Bank name",
+    "accountNumber": "Account number",
+    "ifsc": "IFSC code"
+  },
+  "invoice": {
+    "terms": "Note at the bottom of invoices",
+    "termsHint": "For example: \"Goods once sold will not be taken back.\"",
+    "prefix": "Invoice number starts with",
+    "prefixHint": "Invoices are numbered like INV/2026-27/0001 and restart every April."
+  }
+}

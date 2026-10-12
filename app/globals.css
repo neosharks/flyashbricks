@@ -1,0 +1,335 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+   Components reference semantic names only (--color-action, --color-surface),
+   never a raw hex. Theming and dark mode are a change to this file alone.
+
+   The accent is a calm teal-green; neutrals are clean cool greys (light) and
+   a true charcoal (dark) with no warm tint. Red is kept for real problems only,
+   so the data — stock levels, money owed — is what draws the eye.
+   --------------------------------------------------------------------------- */
+@theme {
+  --color-canvas: oklch(98.4% 0.002 250);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-muted: oklch(96.9% 0.003 250);
+  --color-surface-raised: oklch(100% 0 0);
+
+  --color-foreground: oklch(24% 0.012 255);
+  --color-foreground-muted: oklch(50% 0.014 255);
+  --color-foreground-subtle: oklch(63% 0.012 255);
+
+  --color-border: oklch(92% 0.004 250);
+  --color-border-strong: oklch(85% 0.006 250);
+
+  --color-action: oklch(54% 0.11 175);
+  --color-action-hover: oklch(48% 0.11 175);
+  --color-action-foreground: oklch(99% 0.003 175);
+  --color-action-subtle: oklch(95.5% 0.03 175);
+
+  --color-success: oklch(54% 0.13 150);
+  --color-success-subtle: oklch(95.8% 0.04 150);
+  --color-warning: oklch(60% 0.13 70);
+  --color-warning-subtle: oklch(96.5% 0.045 85);
+  /* Strong on purpose, and used only for what is truly critical. */
+  --color-danger: oklch(55% 0.22 27);
+  --color-danger-hover: oklch(49% 0.22 27);
+  --color-danger-subtle: oklch(96% 0.035 27);
+  /* Calm, non-judgemental status hues: leave (blue) and holidays (violet). */
+  --color-info: oklch(55% 0.14 255);
+  --color-info-subtle: oklch(95.5% 0.03 255);
+  --color-holiday: oklch(54% 0.15 300);
+  --color-holiday-subtle: oklch(95.5% 0.035 300);
+
+  /* Chart roles — the validated reference palette (see components/charts). */
+  --color-chart-1: #2a78d6;
+  --color-chart-2: #eb6834;
+  --color-chart-3: #1baf7a;
+  --color-chart-grid: #e1e0d9;
+  --color-chart-axis: #c3c2b7;
+  --color-status-good: #0ca30c;
+  --color-status-warning: #fab219;
+  --color-status-serious: #ec835a;
+  --color-status-critical: #d03b3b;
+
+  /* Brick faces for the stock and gauge illustrations. */
+  --color-brick: oklch(70% 0.07 55);
+  --color-brick-shade: oklch(60% 0.06 55);
+  --color-mortar: oklch(90% 0.004 250);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px oklch(0% 0 0 / 0.08), 0 1px 2px oklch(0% 0 0 / 0.04);
+  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.08);
+  --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.14);
+
+  --font-sans: var(--font-inter), var(--font-devanagari), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+  Dark mode is its own palette, not an inversion: text stops short of white,
+  surfaces short of black, and elevation comes from lighter surfaces.
+  The system preference applies with no JavaScript; `.light` / `.dark` on
+  <html> override it for the manual toggle.
+*/
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --color-canvas: oklch(15.5% 0.004 260);
+    --color-surface: oklch(19.5% 0.005 260);
+    --color-surface-muted: oklch(24% 0.006 260);
+    --color-surface-raised: oklch(22.5% 0.006 260);
+    --color-foreground: oklch(94% 0.003 260);
+    --color-foreground-muted: oklch(72% 0.008 260);
+    --color-foreground-subtle: oklch(60% 0.008 260);
+    --color-border: oklch(29% 0.006 260);
+    --color-border-strong: oklch(38% 0.008 260);
+    --color-action: oklch(74% 0.11 175);
+    --color-action-hover: oklch(80% 0.1 175);
+    --color-action-foreground: oklch(18% 0.02 175);
+    --color-action-subtle: oklch(28% 0.04 175);
+    --color-success: oklch(76% 0.13 150);
+    --color-success-subtle: oklch(27% 0.045 150);
+    --color-warning: oklch(82% 0.12 80);
+    --color-warning-subtle: oklch(29% 0.05 80);
+    --color-danger: oklch(68% 0.2 25);
+    --color-danger-hover: oklch(73% 0.19 25);
+    --color-danger-subtle: oklch(28% 0.07 25);
+    --color-info: oklch(74% 0.12 255);
+    --color-info-subtle: oklch(28% 0.05 255);
+    --color-holiday: oklch(74% 0.13 300);
+    --color-holiday-subtle: oklch(28% 0.05 300);
+    --color-chart-1: #3987e5;
+    --color-chart-2: #d95926;
+    --color-chart-3: #199e70;
+    --color-chart-grid: #2c2c2a;
+    --color-chart-axis: #383835;
+    --color-brick: oklch(62% 0.06 55);
+    --color-brick-shade: oklch(52% 0.05 55);
+    --color-mortar: oklch(30% 0.005 260);
+  }
+}
+
+.dark {
+  --color-canvas: oklch(15.5% 0.004 260);
+  --color-surface: oklch(19.5% 0.005 260);
+  --color-surface-muted: oklch(24% 0.006 260);
+  --color-surface-raised: oklch(22.5% 0.006 260);
+  --color-foreground: oklch(94% 0.003 260);
+  --color-foreground-muted: oklch(72% 0.008 260);
+  --color-foreground-subtle: oklch(60% 0.008 260);
+  --color-border: oklch(29% 0.006 260);
+  --color-border-strong: oklch(38% 0.008 260);
+  --color-action: oklch(74% 0.11 175);
+  --color-action-hover: oklch(80% 0.1 175);
+  --color-action-foreground: oklch(18% 0.02 175);
+  --color-action-subtle: oklch(28% 0.04 175);
+  --color-success: oklch(76% 0.13 150);
+  --color-success-subtle: oklch(27% 0.045 150);
+  --color-warning: oklch(82% 0.12 80);
+  --color-warning-subtle: oklch(29% 0.05 80);
+  --color-danger: oklch(68% 0.2 25);
+  --color-danger-hover: oklch(73% 0.19 25);
+  --color-danger-subtle: oklch(28% 0.07 25);
+  --color-info: oklch(74% 0.12 255);
+  --color-info-subtle: oklch(28% 0.05 255);
+  --color-holiday: oklch(74% 0.13 300);
+  --color-holiday-subtle: oklch(28% 0.05 300);
+  --color-chart-1: #3987e5;
+  --color-chart-2: #d95926;
+  --color-chart-3: #199e70;
+  --color-chart-grid: #2c2c2a;
+  --color-chart-axis: #383835;
+  --color-brick: oklch(62% 0.06 55);
+  --color-brick-shade: oklch(52% 0.05 55);
+  --color-mortar: oklch(30% 0.005 260);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) {
+      color-scheme: dark;
+    }
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    /* 16px floor: smaller text triggers zoom-on-focus in iOS Safari. */
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Devanagari needs more leading than Latin or the matras collide. */
+  :lang(hi) body {
+    line-height: 1.7;
+  }
+
+  /*
+    Readability settings (components/layout/display-settings.tsx).
+
+    Text size scales the root font size; the whole layout is in rem, so
+    spacing, controls and touch targets grow with the text and nothing
+    overlaps. Bolder text raises every weight one step by redefining the
+    weight tokens the utility classes read.
+
+    Devanagari strokes are thinner than Latin ones at the same weight, so
+    Hindi reads one step heavier by default, and two with bolder text on.
+  */
+  html[data-text-size='sm'] {
+    font-size: 93.75%;
+  }
+  html[data-text-size='lg'] {
+    font-size: 112.5%;
+  }
+  html[data-text-size='xl'] {
+    font-size: 125%;
+  }
+  html[data-text-size='xxl'] {
+    font-size: 137.5%;
+  }
+
+  body {
+    font-weight: var(--font-weight-normal);
+  }
+
+  html:lang(hi),
+  html[data-bold] {
+    --font-weight-normal: 500;
+    --font-weight-medium: 600;
+    --font-weight-semibold: 700;
+    --font-weight-bold: 800;
+  }
+
+  html[data-bold]:lang(hi) {
+    --font-weight-normal: 600;
+    --font-weight-medium: 700;
+    --font-weight-semibold: 800;
+    --font-weight-bold: 800;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 999;
+    padding: 0.75rem 1rem;
+    background: var(--color-surface);
+    color: var(--color-foreground);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+  }
+
+  /* A brick-bond pattern for the sign-in backdrop and empty states. */
+  .brick-pattern {
+    background-color: var(--color-surface-muted);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='28'%3E%3Cpath d='M0 .5h56M0 14.5h56M.5 0v14M28.5 14v14' stroke='%23a8a29e' stroke-opacity='.28' fill='none'/%3E%3C/svg%3E");
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Loaders: bricks being laid, a truck on the road. Calm, looping motion;
+   with reduced motion they hold still in their finished state.
+   --------------------------------------------------------------------------- */
+@layer components {
+  @keyframes brick-lay {
+    0%,
+    8% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    22%,
+    82% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+  }
+
+  .brick-loader .brick {
+    transform-box: fill-box;
+    animation: brick-lay 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite both;
+  }
+
+  @keyframes road-move {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+
+  @keyframes truck-bob {
+    50% {
+      transform: translateY(-1px);
+    }
+  }
+
+  .truck-loader .road {
+    animation: road-move 0.8s linear infinite;
+  }
+
+  .truck-loader .truck {
+    animation: truck-bob 0.5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brick-loader .brick,
+    .truck-loader .road,
+    .truck-loader .truck {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

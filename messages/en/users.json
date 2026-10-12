@@ -1,0 +1,173 @@
+{
+  "title": "App logins",
+  "description": "People who can sign in to the app, and what each can see and change. Workers without a login are managed under Staff.",
+  "add": "Add employee",
+  "newTitle": "Add an employee",
+  "newDescription": "They sign in with their phone number and a temporary password you give them, then choose their own.",
+  "searchPlaceholder": "Search by name or phone",
+  "columns": {
+    "name": "Name",
+    "phone": "Phone",
+    "role": "Role",
+    "access": "Access",
+    "status": "Status",
+    "lastLogin": "Last sign-in",
+    "createdAt": "Added"
+  },
+  "roles": {
+    "admin": "Admin",
+    "employee": "Employee"
+  },
+  "roleHints": {
+    "admin": "Can do everything, including managing employees and voiding sales.",
+    "employee": "Can only use the sections you allow below."
+  },
+  "modules": {
+    "rawMaterials": "Raw materials",
+    "production": "Production & stock",
+    "sales": "Sales & customers",
+    "users": "Employees",
+    "staff": "Staff & attendance"
+  },
+  "moduleHints": {
+    "rawMaterials": "Stock levels, purchases, adjustments",
+    "production": "Daily production, brick stock, brick types",
+    "sales": "Sales, payments, customer records",
+    "users": "Add and manage other employees",
+    "staff": "Workers, daily attendance, wages and advances"
+  },
+  "levels": {
+    "none": "No access",
+    "read": "View",
+    "write": "View & edit"
+  },
+  "levelsShort": {
+    "none": "—",
+    "read": "View",
+    "write": "Edit"
+  },
+  "fullAccess": "Full access",
+  "status": {
+    "active": "Active",
+    "disabled": "Disabled",
+    "pendingPassword": "Not signed in yet"
+  },
+  "filters": {
+    "label": "Filter by status",
+    "all": "All",
+    "active": "Active",
+    "disabled": "Disabled",
+    "pending": "Not signed in yet",
+    "roleLabel": "Filter by role"
+  },
+  "stats": {
+    "active": "Active employees",
+    "disabled": "Disabled",
+    "neverSignedIn": "Have not signed in yet"
+  },
+  "form": {
+    "name": "Full name",
+    "phone": "Mobile number",
+    "phoneHint": "Used to sign in. Must be unique.",
+    "email": "Email",
+    "emailHint": "Also works for sign-in, and receives alerts.",
+    "jobTitle": "Job title",
+    "jobTitlePlaceholder": "e.g. Plant supervisor",
+    "role": "Role",
+    "access": "Access by section",
+    "accessHint": "Admins always have full access.",
+    "create": "Create employee",
+    "save": "Save changes",
+    "alertsHint": "Each person chooses which alerts they get, and how (app, email, SMS, WhatsApp), on their Notifications page."
+  },
+  "created": "Employee added",
+  "updated": "Changes saved",
+  "temporaryPassword": {
+    "title": "Temporary password",
+    "description": "Give this to {name}. It is shown only once and works for 3 days. They will choose their own password when they first sign in.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "done": "Done"
+  },
+  "detail": {
+    "profile": "Profile & access",
+    "security": "Security",
+    "loginHistory": "Sign-in history",
+    "loginHistoryEmpty": "No sign-ins yet.",
+    "activity": "Recent activity",
+    "activityEmpty": "Nothing recorded yet.",
+    "success": "Signed in",
+    "failed": "Failed",
+    "reasons": {
+      "bad_password": "Wrong password",
+      "disabled": "Account disabled",
+      "expired": "Temporary password expired"
+    },
+    "lastLogin": "Last sign-in",
+    "joined": "Added on",
+    "you": "This is you",
+    "loginFilter": {
+      "label": "Show sign-ins",
+      "all": "All",
+      "success": "Signed in",
+      "failed": "Failed"
+    },
+    "seeAllActivity": "See all activity",
+    "device": "Device"
+  },
+  "actions": {
+    "resetPassword": "Reset password",
+    "resetPasswordTitle": "Reset {name}'s password?",
+    "resetPasswordBody": "They will be signed out everywhere and must sign in with a new temporary password.",
+    "resetPasswordConfirm": "Reset password",
+    "disable": "Disable account",
+    "disableTitle": "Disable {name}?",
+    "disableBody": "They will be signed out immediately and cannot sign in until you enable the account again. Their records stay.",
+    "disableConfirm": "Disable",
+    "disabled": "Account disabled",
+    "enable": "Enable account",
+    "enableTitle": "Enable {name}?",
+    "enableBody": "They will be able to sign in again with their existing password.",
+    "enableConfirm": "Enable",
+    "enabled": "Account enabled",
+    "signOutEverywhere": "Sign out everywhere",
+    "signOutEverywhereTitle": "Sign {name} out on every device?",
+    "signOutEverywhereBody": "Any phone or computer they are signed in on will need to sign in again.",
+    "signOutEverywhereConfirm": "Sign out everywhere",
+    "signedOut": "Signed out on all devices"
+  },
+  "emptyTitle": "No employees yet",
+  "emptyBody": "Add the people who work at the plant so they can record production and sales.",
+  "photo": {
+    "title": "Photo",
+    "add": "Add photo",
+    "change": "Change photo",
+    "remove": "Remove photo",
+    "uploading": "Uploading photo",
+    "saved": "Photo saved",
+    "removed": "Photo removed",
+    "hint": "Optional. JPG, PNG or WebP. It is resized automatically.",
+    "errors": {
+      "invalid": "That file is not a photo, or it is too large.",
+      "full": "Storage is full. Ask your admin.",
+      "failed": "The photo could not be saved. Please try again."
+    }
+  },
+  "sort": {
+    "name": "Name (A–Z)",
+    "newest": "Added most recently",
+    "lastLogin": "Signed in most recently"
+  },
+  "groups": {
+    "label": "Group by",
+    "none": "No grouping",
+    "role": "Role",
+    "status": "Status"
+  },
+  "groupColumns": {
+    "people": "People",
+    "active": "Active",
+    "pending": "Not signed in yet",
+    "disabled": "Disabled"
+  }
+}

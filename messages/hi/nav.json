@@ -1,0 +1,29 @@
+{
+  "main": "मुख्य मेनू",
+  "dashboard": "डैशबोर्ड",
+  "rawMaterials": "कच्चा माल",
+  "production": "उत्पादन",
+  "stock": "ईंट स्टॉक",
+  "sales": "बिक्री",
+  "customers": "ग्राहक",
+  "users": "ऐप लॉगिन",
+  "activity": "गतिविधि लॉग",
+  "account": "मेरा खाता",
+  "signOut": "लॉग आउट",
+  "signingOut": "लॉग आउट हो रहा है…",
+  "openMenu": "मेनू खोलें",
+  "closeMenu": "मेनू बंद करें",
+  "more": "और",
+  "current": "(मौजूदा पेज)",
+  "groups": {
+    "manufacturing": "निर्माण",
+    "selling": "बिक्री",
+    "admin": "प्रशासन",
+    "people": "लोग"
+  },
+  "backup": "बैकअप और एक्सपोर्ट",
+  "settings": "व्यापार की जानकारी",
+  "notifications": "सूचनाएँ",
+  "staff": "स्टाफ़",
+  "attendance": "हाज़िरी"
+}
