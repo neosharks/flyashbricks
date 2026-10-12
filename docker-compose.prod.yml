@@ -164,7 +164,7 @@ services:
     logging: *logging
 
   redis:
-    image: redis:7.4-alpine
+    image: redis:8.10-alpine
     <<: *hardening
     restart: unless-stopped
     # The image's own user (redis:redis); the data volume is already owned by it.
