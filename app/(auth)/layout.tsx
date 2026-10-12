@@ -67,7 +67,9 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           </div>
           <div className="flex items-center gap-2">
             <LanguageSwitch />
-            <ThemeToggle />
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
           </div>
         </header>
         <main
@@ -77,6 +79,9 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <div className="w-full max-w-sm">{children}</div>
         </main>
         <footer className="text-foreground-subtle flex flex-col items-center gap-2 px-6 pb-6 text-xs">
+          <div className="mb-2 sm:hidden">
+            <ThemeToggle />
+          </div>
           <p className="flex items-center gap-1.5 lg:hidden">
             <Lock aria-hidden className="size-3" />
             {ta('panel.secure')}

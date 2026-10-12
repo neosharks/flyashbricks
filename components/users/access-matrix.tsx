@@ -44,7 +44,7 @@ export function AccessMatrix({
                 <label
                   key={level}
                   className={cn(
-                    'flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded px-3 text-center text-xs font-medium transition-colors sm:min-h-9 sm:flex-none',
+                    'flex min-h-11 flex-auto cursor-pointer items-center justify-center rounded px-3 text-center text-xs font-medium whitespace-nowrap transition-colors sm:min-h-9 sm:flex-none',
                     checked
                       ? level === 'none'
                         ? 'bg-surface text-foreground shadow-xs'

@@ -76,7 +76,7 @@ export function AgeingBar({ rows }: { rows: AgeingRow[] }) {
           : tc('tapHint')}
       </p>
 
-      <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 2xl:grid-cols-4">
         {rows.map((row) => (
           <li key={row.bucket}>
             <button

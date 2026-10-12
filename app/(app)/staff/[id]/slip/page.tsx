@@ -65,7 +65,7 @@ export default async function SalarySlipPage({
       <div className="mb-4 flex items-center justify-between gap-3 print:hidden">
         <Link
           href={`/staff/${staff.id}`}
-          className="text-foreground-muted hover:text-foreground inline-flex items-center gap-1 text-sm"
+          className="text-foreground-muted hover:text-foreground inline-flex min-h-11 items-center gap-1 text-sm"
         >
           <ChevronLeft aria-hidden className="size-4" />
           {t('slip.back')}
