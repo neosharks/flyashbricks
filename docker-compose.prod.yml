@@ -37,6 +37,7 @@ services:
     cap_add: [NET_BIND_SERVICE]
     environment:
       APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN}
+      APP_TLS: ${APP_TLS:-}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -106,7 +107,14 @@ services:
   # One-off: index sync and data migrations, run before each rollout. Also
   # runs the admin scripts (org:create, backup:restore).
   migrate:
-    build: { context: ., target: tools }
+    build:
+      context: .
+      target: tools
+      # The tools stage builds on the app build, which needs the same public
+      # values; identical args also let it reuse the app's cached layers.
+      args:
+        NEXT_PUBLIC_APP_URL: https://${APP_DOMAIN:?set APP_DOMAIN}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Fly Ash Bricks}
     profiles: ['tools']
     security_opt: ['no-new-privileges:true']
     cap_drop: [ALL]

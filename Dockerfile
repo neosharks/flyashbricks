@@ -11,8 +11,11 @@ RUN pnpm install --frozen-lockfile
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Skipped validation also skips the schema's defaults, and the logger is
+# created while pages are collected; it needs a level.
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    SKIP_ENV_VALIDATION=true
+    SKIP_ENV_VALIDATION=true \
+    LOG_LEVEL=info
 # NEXT_PUBLIC_* are inlined at build time. Pass them per environment:
 #   docker build --build-arg NEXT_PUBLIC_APP_URL=https://bricks.example.com .
 ARG NEXT_PUBLIC_APP_URL
