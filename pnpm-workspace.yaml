@@ -14,8 +14,15 @@ allowBuilds:
 # nodemailer for its email provider, which this app does not use, so newer
 # majors are safe for it.
 overrides:
-  nodemailer: '>=10.0.6'
+  nodemailer: '^10.0.16'
 
 peerDependencyRules:
   allowedVersions:
     nodemailer: '10'
+
+auditConfig:
+  ignoreGhsas:
+    # braces, reached only through eslint-config-next (lint tooling, never
+    # shipped or fed untrusted input). No fixed release exists yet; drop this
+    # once one does.
+    - GHSA-vfj7-8cjw-p6xm

@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  nodemailer: '>=10.0.6'
+  nodemailer: ^10.0.16
 
 importers:
 
@@ -194,7 +194,7 @@ packages:
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
-      nodemailer: '>=10.0.6'
+      nodemailer: ^10.0.16
     peerDependenciesMeta:
       '@simplewebauthn/browser':
         optional: true
@@ -3388,7 +3388,7 @@ packages:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
       next: ^14.0.0-0 || ^15.0.0 || ^16.0.0
-      nodemailer: '>=10.0.6'
+      nodemailer: ^10.0.16
       react: ^18.2.0 || ^19.0.0
     peerDependenciesMeta:
       '@simplewebauthn/browser':
