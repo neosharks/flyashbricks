@@ -1,0 +1,68 @@
+{
+  "title": "Backup",
+  "description": "Save a full copy of all your data, so nothing is lost if something goes wrong.",
+  "whatBody": "A backup has everything: employees, raw materials, production, brick stock, customers, sales and payments.",
+  "lastBackup": "Last backup",
+  "lastBackupNever": "No backup yet",
+  "lastBackupHint": "Take a backup at least once a week.",
+  "password": "Backup password",
+  "confirmPassword": "Type the password again",
+  "passwordHint": "At least 16 letters. A short sentence works well.",
+  "keepSafe": "Keep this password safe — without it the backup cannot be opened.",
+  "download": {
+    "title": "Download backup",
+    "description": "Saves the backup on this phone or computer. Copy it to a pen drive or Google Drive.",
+    "submit": "Download backup",
+    "preparing": "Getting your backup ready…",
+    "done": "Backup downloaded",
+    "moreOptions": "More options",
+    "unencrypted": "Download without a password",
+    "unencryptedWarning": "Not recommended. Anyone who gets this file can read all your customers, sales and staff details.",
+    "currentPassword": "Your login password",
+    "currentPasswordHint": "Needed to download a file anyone can read."
+  },
+  "email": {
+    "title": "Email backup",
+    "description": "Sends the backup to an email address. Tell the password by phone — never in the same email.",
+    "to": "Email address",
+    "submit": "Email backup",
+    "sending": "Sending…",
+    "done": "Backup sent to {to}",
+    "tooLarge": "The backup is too big to email. Please download it instead."
+  },
+  "automatic": {
+    "title": "Automatic daily backup",
+    "on": "On",
+    "off": "Off",
+    "onBody": "A backup is made every day without anyone doing anything.",
+    "offBody": "Not switched on yet. Ask the person who set up the server to switch it on.",
+    "lastRun": "Last automatic backup",
+    "never": "Not yet"
+  },
+  "history": {
+    "title": "Past backups",
+    "empty": "No backups yet.",
+    "when": "When",
+    "who": "By",
+    "type": "How",
+    "locked": "Password",
+    "lockedYes": "Yes",
+    "lockedNo": "No",
+    "automatic": "Automatic",
+    "types": {
+      "download": "Downloaded",
+      "email": "Emailed",
+      "scheduled": "Automatic"
+    }
+  },
+  "helpTitle": "Need to bring data back?",
+  "helpBody": "Give the backup file and its password to the person who set up the server. They can put everything back.",
+  "validation": {
+    "passphraseTooShort": "Use at least 16 letters.",
+    "passphraseTooLong": "That password is too long.",
+    "passphrasesDoNotMatch": "The two passwords are not the same.",
+    "invalidEmail": "Enter a correct email address.",
+    "currentPasswordRequired": "Enter your login password.",
+    "wrongPassword": "That is not your login password."
+  }
+}
