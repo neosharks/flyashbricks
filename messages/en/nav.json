@@ -21,10 +21,8 @@
     "admin": "Administration",
     "people": "People"
   },
-  "backup": "Backup & export",
-  "settings": "Business settings",
+  "settings": "Settings",
   "notifications": "Notifications",
   "staff": "Staff",
-  "attendance": "Attendance",
-  "updates": "Updates"
+  "attendance": "Attendance"
 }

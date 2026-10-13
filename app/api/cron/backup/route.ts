@@ -98,7 +98,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           orgId,
           type: 'backup_failed',
           params: { reference: traceId },
-          href: '/backup',
+          href: '/settings/backup',
           dedupeKey: `backup_failed:${new Date().toISOString().slice(0, 10)}`,
         }).catch((notifyErr: unknown) =>
           reportUnexpected(notifyErr, 'could not notify about failed backup', { org_id: orgId }),

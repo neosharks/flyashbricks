@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { StatCard } from '@/components/ui/stat-card';
 import { Page } from '@/components/ui/page';
 import { UpdatePanel } from '@/components/system/update-panel';
+import { SettingsTabs } from '@/components/settings/settings-tabs';
 import { fetchLatestRelease } from '@/features/system/releases';
 import { readUpdaterState } from '@/features/system/updater';
 import { isNewer } from '@/features/system/version';
@@ -15,7 +16,7 @@ import { formatDate } from '@/lib/utils';
 export const metadata: Metadata = { title: 'Updates' };
 
 export default async function UpdatesPage() {
-  await requirePermissionPage('/updates', 'system:update');
+  const viewer = await requirePermissionPage('/settings/updates', 'system:update');
   const [t, locale, state, latest] = await Promise.all([
     getTranslations('system'),
     getLocale(),
@@ -27,6 +28,7 @@ export default async function UpdatesPage() {
   return (
     <Page size="medium">
       <PageHeader title={t('title')} description={t('description')} />
+      <SettingsTabs viewer={viewer} current="updates" />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <StatCard

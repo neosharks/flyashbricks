@@ -9,12 +9,10 @@ export type NavIcon =
   | 'customers'
   | 'users'
   | 'activity'
-  | 'backup'
   | 'settings'
   | 'notifications'
   | 'staff'
-  | 'attendance'
-  | 'updates';
+  | 'attendance';
 
 export type NavItem = {
   href: string;
@@ -78,20 +76,12 @@ const ALL: (NavItem & { requires: Action | null })[] = [
     group: 'admin',
     requires: 'activity:read',
   },
-  { href: '/backup', label: 'backup', icon: 'backup', group: 'admin', requires: 'backup:run' },
   {
     href: '/settings',
     label: 'settings',
     icon: 'settings',
     group: 'admin',
     requires: 'settings:manage',
-  },
-  {
-    href: '/updates',
-    label: 'updates',
-    icon: 'updates',
-    group: 'admin',
-    requires: 'system:update',
   },
 ];
 

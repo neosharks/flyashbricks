@@ -21,10 +21,8 @@
     "admin": "प्रशासन",
     "people": "लोग"
   },
-  "backup": "बैकअप और एक्सपोर्ट",
-  "settings": "व्यापार की जानकारी",
+  "settings": "सेटिंग्स",
   "notifications": "सूचनाएँ",
   "staff": "स्टाफ़",
-  "attendance": "हाज़िरी",
-  "updates": "अपडेट"
+  "attendance": "हाज़िरी"
 }

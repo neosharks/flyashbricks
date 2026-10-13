@@ -44,5 +44,11 @@
     "termsHint": "For example: \"Goods once sold will not be taken back.\"",
     "prefix": "Invoice number starts with",
     "prefixHint": "Invoices are numbered like INV/2026-27/0001 and restart every April."
+  },
+  "tabs": {
+    "label": "Settings sections",
+    "business": "Business",
+    "backup": "Backup & export",
+    "updates": "Updates"
   }
 }

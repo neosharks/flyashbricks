@@ -23,6 +23,7 @@ import { formatDateTime } from '@/lib/utils';
 import { DownloadBackupForm } from '@/components/backup/download-backup-form';
 import { EmailBackupForm } from '@/components/backup/email-backup-form';
 import { Page } from '@/components/ui/page';
+import { SettingsTabs } from '@/components/settings/settings-tabs';
 
 export const metadata: Metadata = { title: 'Backup' };
 
@@ -38,7 +39,7 @@ export default async function BackupPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const viewer = await requirePermissionPage('/backup', 'backup:run');
+  const viewer = await requirePermissionPage('/settings/backup', 'backup:run');
   const query = await searchParams;
   const table = parseTableParams(
     query,
@@ -63,6 +64,7 @@ export default async function BackupPage({
   return (
     <Page size="medium">
       <PageHeader title={t('title')} description={t('description')} />
+      <SettingsTabs viewer={viewer} current="backup" />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <StatCard
@@ -131,7 +133,7 @@ export default async function BackupPage({
                   label={t('history.when')}
                   sort={table.sort}
                   dir={table.dir}
-                  basePath="/backup"
+                  basePath="/settings/backup"
                   query={query}
                   defaultDir="desc"
                   prefix="hist_"
@@ -158,7 +160,7 @@ export default async function BackupPage({
               </TBody>
             </Table>
             <Pagination
-              basePath="/backup"
+              basePath="/settings/backup"
               query={query}
               next={history.next}
               prev={history.prev}

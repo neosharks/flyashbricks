@@ -12,7 +12,8 @@ const PAGES = [
   '/customers',
   '/users',
   '/activity',
-  '/backup',
+  '/settings/backup',
+  '/settings/updates',
   '/account',
 ];
 

@@ -10,13 +10,11 @@ import {
   CalendarCheck,
   HardHat,
   ClipboardList,
-  DatabaseBackup,
   Factory,
   LayoutDashboard,
   Menu,
   Package,
   ReceiptIndianRupee,
-  RefreshCw,
   Settings,
   UserCog,
   Users,
@@ -34,12 +32,10 @@ const ICONS: Record<NavIcon, typeof Boxes> = {
   customers: Users,
   users: UserCog,
   activity: ClipboardList,
-  backup: DatabaseBackup,
   settings: Settings,
   notifications: Bell,
   staff: HardHat,
   attendance: CalendarCheck,
-  updates: RefreshCw,
 };
 
 function matches(pathname: string, href: string): boolean {

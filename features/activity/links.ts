@@ -16,7 +16,9 @@ export function activityHref(entity: string, entityId: string): string | null {
     case 'Organization':
       return '/settings';
     case 'Backup':
-      return '/backup';
+      return '/settings/backup';
+    case 'System':
+      return '/settings/updates';
     case 'StaffMember':
       // A whole day's sheet or a wages export has no single person to open.
       if (entityId === 'sheet') return '/staff/attendance';
