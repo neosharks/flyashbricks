@@ -24,5 +24,6 @@
   "settings": "सेटिंग्स",
   "notifications": "सूचनाएँ",
   "staff": "स्टाफ़",
-  "attendance": "हाज़िरी"
+  "attendance": "हाज़िरी",
+  "accountMenu": "{name} का खाता मेनू"
 }

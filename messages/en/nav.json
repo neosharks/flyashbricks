@@ -24,5 +24,6 @@
   "settings": "Settings",
   "notifications": "Notifications",
   "staff": "Staff",
-  "attendance": "Attendance"
+  "attendance": "Attendance",
+  "accountMenu": "Account menu for {name}"
 }

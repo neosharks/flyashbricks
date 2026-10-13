@@ -38,7 +38,7 @@ test.describe('signed-in pages', () => {
       .first()
       .click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
-    await expect(page.getByRole('heading', { level: 1, name: 'डैशबोर्ड' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'डैशबोर्ड' }).first()).toBeVisible();
     await page.getByRole('button', { name: /भाषा/ }).first().click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });

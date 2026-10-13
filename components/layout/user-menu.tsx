@@ -32,7 +32,10 @@ export function UserMenu({
   const [pending, startTransition] = useTransition();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="hover:bg-surface-muted flex min-h-10 items-center gap-2 rounded-md px-1.5 text-sm">
+      <DropdownMenuTrigger
+        aria-label={t('accountMenu', { name })}
+        className="hover:bg-surface-muted flex min-h-10 items-center gap-2 rounded-md px-1.5 text-sm"
+      >
         <Avatar name={name} imageId={imageId} gender={gender} variant={variant} size="sm" />
         <span className="hidden flex-col items-start leading-tight sm:flex">
           <span className="font-medium">{name}</span>

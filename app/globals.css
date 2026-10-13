@@ -19,19 +19,19 @@
 
   --color-foreground: oklch(24% 0.012 255);
   --color-foreground-muted: oklch(50% 0.014 255);
-  --color-foreground-subtle: oklch(63% 0.012 255);
+  --color-foreground-subtle: oklch(56% 0.012 255);
 
   --color-border: oklch(92% 0.004 250);
   --color-border-strong: oklch(85% 0.006 250);
 
-  --color-action: oklch(54% 0.11 175);
-  --color-action-hover: oklch(48% 0.11 175);
+  --color-action: oklch(51% 0.11 175);
+  --color-action-hover: oklch(45% 0.11 175);
   --color-action-foreground: oklch(99% 0.003 175);
   --color-action-subtle: oklch(95.5% 0.03 175);
 
-  --color-success: oklch(54% 0.13 150);
+  --color-success: oklch(52% 0.13 150);
   --color-success-subtle: oklch(95.8% 0.04 150);
-  --color-warning: oklch(60% 0.13 70);
+  --color-warning: oklch(54% 0.13 70);
   --color-warning-subtle: oklch(96.5% 0.045 85);
   /* Strong on purpose, and used only for what is truly critical. */
   --color-danger: oklch(55% 0.22 27);

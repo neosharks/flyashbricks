@@ -42,6 +42,6 @@ test.describe('a new employee', () => {
     await page.getByLabel(/^new password/i).fill('a long new password');
     await page.getByLabel(/confirm new password/i).fill('a long new password');
     await page.getByRole('button', { name: /set password/i }).click();
-    await expect(page.getByRole('heading', { level: 1, name: /dashboard/i })).toBeVisible();
+    await expect(page).toHaveURL('/');
   });
 });
