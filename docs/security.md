@@ -62,7 +62,8 @@ everything by design.
   checked against nodejs.org's published sums.
 - HTTPS is the Cloudflare Tunnel's job. The app listens on plain HTTP port 3000 for the tunnel
   connector — anyone else who can reach that port can reach the app the same way, so keep it
-  on a trusted network (or run `cloudflared` on the same machine and set `HOSTNAME="127.0.0.1"`).
+  on a trusted network. (It cannot listen on `127.0.0.1` only: Next.js then treats its own
+  rewrites, such as the public home page, as another origin and fails to load them.)
 - `/api/cron/*` needs `CRON_SECRET`; the timers call it on `127.0.0.1`.
 - Logs go to the journal (`journalctl -u flyashbricks`), which rotates them itself.
 

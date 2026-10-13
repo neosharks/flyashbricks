@@ -21,7 +21,7 @@
 # /root/flyashbricks-install.env when install.sh pushed one:
 #   APP_URL         the public https:// address, e.g. https://bricks.example.com
 #   CF_TUNNEL_TOKEN Cloudflare Tunnel token; the connector then runs here and
-#                   reaches the app on localhost, which stops listening on the network
+#                   reaches the app on localhost
 #   ORG_NAME, ADMIN_NAME, ADMIN_PHONE, ADMIN_EMAIL
 #                   first company and its admin; skipped when ORG_NAME is empty
 #   SMTP_URL, MAIL_FROM
@@ -201,8 +201,8 @@ EOF
 }
 
 # The Cloudflare Tunnel connector, when a token is given. It runs on this
-# machine, so the app only has to listen on localhost. HTTP/2 rather than the
-# default QUIC, which many home networks block on UDP 7844.
+# machine and reaches the app on localhost. HTTP/2 rather than the default
+# QUIC, which many home networks block on UDP 7844.
 ensure_cloudflared() {
   [[ -n "${CF_TUNNEL_TOKEN:-}" ]] || return 0
   # shellcheck source=/dev/null
@@ -252,9 +252,6 @@ write_config() {
   url=${url%/}
   local host=${url#https://}
   host=${host%%:*}
-  # With the connector on this machine nothing else needs to reach the app.
-  local listen=0.0.0.0
-  [[ -n "${CF_TUNNEL_TOKEN:-}" ]] && listen=127.0.0.1
   local mail_transport=console
   [[ -n "${SMTP_URL:-}" ]] && mail_transport=smtp
   local app_password
@@ -268,7 +265,9 @@ write_config() {
 # After editing: systemctl restart flyashbricks
 NODE_ENV="production"
 PORT="$PORT"
-HOSTNAME="$listen"
+# All interfaces: with 127.0.0.1, Next.js sees its own rewrites (the public
+# home page) as another origin and fails to fetch them over TLS.
+HOSTNAME="0.0.0.0"
 APP_URL="$url"
 AUTH_URL="$url"
 AUTH_TRUST_HOST="true"

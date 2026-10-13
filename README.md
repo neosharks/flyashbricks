@@ -117,8 +117,8 @@ The app is reached through a **Cloudflare Tunnel**. Create the tunnel first (Zer
 Networks → Tunnels → Create, type Cloudflared), give it the public hostname you want with
 service type **HTTP** and URL **`localhost:3000`**, and copy its token (the value starting
 with `eyJ`). The installer asks for the public address and that token, runs the connector
-inside the container over HTTP/2, and keeps the app listening on localhost only. Without a
-token, point a connector elsewhere at `http://<container IP>:3000`.
+inside the container over HTTP/2. Without a token, point a connector elsewhere at
+`http://<container IP>:3000`.
 
 On the server:
 

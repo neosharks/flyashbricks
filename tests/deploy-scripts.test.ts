@@ -96,18 +96,13 @@ describe('server setup script', () => {
       await expect(stat(path.join(dir, '.mongo-app'))).rejects.toThrow();
     });
 
-    it('listens on the network only when the tunnel connector runs elsewhere', async () => {
-      runSetup(dir, 'write_config', { APP_URL: 'https://bricks.example.in' });
-      expect(parse(await readFile(path.join(dir, 'env'), 'utf8')).HOSTNAME).toBe('0.0.0.0');
-    });
-
-    it('listens on localhost only when the connector runs on this machine', async () => {
+    it('listens on every interface and never writes the tunnel token into the settings', async () => {
       runSetup(dir, 'write_config', {
         APP_URL: 'https://bricks.example.in',
         CF_TUNNEL_TOKEN: 'eyJtest',
       });
       const text = await readFile(path.join(dir, 'env'), 'utf8');
-      expect(parse(text).HOSTNAME).toBe('127.0.0.1');
+      expect(parse(text).HOSTNAME).toBe('0.0.0.0');
       expect(text).not.toContain('eyJtest');
     });
 
