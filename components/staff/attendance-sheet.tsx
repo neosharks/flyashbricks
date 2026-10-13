@@ -8,8 +8,11 @@ import { CheckCheck, Save } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Input } from '@/components/ui/input';
 import { markAttendanceAction } from '@/features/staff/actions';
+import { AttendanceSheetSchema, foldSheet } from '@/features/staff/schema';
 import type { SheetRow } from '@/features/staff/types';
 import { useActionForm } from '@/hooks/use-action-form';
 import { pickText } from '@/lib/bilingual';
@@ -69,10 +72,14 @@ export function AttendanceSheet({
   );
   const [marks, setMarks] = useState<Record<string, Mark>>(initial);
 
-  const form = useActionForm(markAttendanceAction, (result) => {
-    toast.success(t('sheet.saved', { count: result.marked }));
-    router.refresh();
-  });
+  const form = useActionForm(
+    markAttendanceAction,
+    (result) => {
+      toast.success(t('sheet.saved', { count: result.marked }));
+      router.refresh();
+    },
+    { schema: AttendanceSheetSchema, prepare: foldSheet, translate: translateError },
+  );
 
   const update = (id: string, change: Partial<Mark>) =>
     setMarks((current) => {
@@ -90,17 +97,25 @@ export function AttendanceSheet({
     return acc;
   }, {});
   const unmarked = rows.filter((row) => !marks[row.id]?.status).length;
+  // Errors name an entry by its place among the marked people, as `foldSheet` posts them.
+  const entryOf = new Map<string, number>();
+  for (const row of rows) if (marks[row.id]?.status) entryOf.set(row.id, entryOf.size);
 
   if (rows.length === 0) {
     return <p className="text-foreground-muted text-sm">{t('sheet.nobody')}</p>;
   }
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
       <input type="hidden" name="date" value={date} />
-      {form.formError && (
-        <Alert tone="danger">{translateError(form.error('entries')) ?? form.formError}</Alert>
-      )}
+      <FormErrors form={form} />
       {!canWrite && <Alert tone="info">{t('sheet.readOnly')}</Alert>}
 
       <div className="border-border bg-surface flex flex-wrap items-center gap-2 rounded-lg border p-3">
@@ -158,6 +173,8 @@ export function AttendanceSheet({
             showOvertime: false,
           };
           const name = pickText(row.name, row.nameHi, locale);
+          const entry = entryOf.get(row.id);
+          const key = (field: string) => `entries.${entry ?? -1}.${field}`;
           return (
             <li
               key={row.id}
@@ -219,26 +236,38 @@ export function AttendanceSheet({
 
                 <div className="mt-2 flex flex-wrap items-end gap-3">
                   {row.wageType === 'per_thousand_bricks' && (
-                    <label className="flex flex-col gap-1 text-xs">
-                      {t('sheet.bricks')}
-                      <Input
-                        value={mark.bricks}
-                        inputMode="numeric"
-                        onChange={(event) => update(row.id, { bricks: event.target.value })}
-                        className="w-32"
-                      />
-                    </label>
+                    <Field
+                      label={t('sheet.bricks')}
+                      error={form.error(key('bricks'))}
+                      className="w-36"
+                    >
+                      {(props) => (
+                        <Input
+                          {...props}
+                          data-error-key={key('bricks')}
+                          value={mark.bricks}
+                          inputMode="numeric"
+                          onChange={(event) => update(row.id, { bricks: event.target.value })}
+                        />
+                      )}
+                    </Field>
                   )}
                   {mark.showOvertime ? (
-                    <label className="flex flex-col gap-1 text-xs">
-                      {t('sheet.overtimeHours')}
-                      <Input
-                        value={mark.overtime}
-                        inputMode="decimal"
-                        onChange={(event) => update(row.id, { overtime: event.target.value })}
-                        className="w-28"
-                      />
-                    </label>
+                    <Field
+                      label={t('sheet.overtimeHours')}
+                      error={form.error(key('overtimeHours'))}
+                      className="w-36"
+                    >
+                      {(props) => (
+                        <Input
+                          {...props}
+                          data-error-key={key('overtimeHours')}
+                          value={mark.overtime}
+                          inputMode="decimal"
+                          onChange={(event) => update(row.id, { overtime: event.target.value })}
+                        />
+                      )}
+                    </Field>
                   ) : (
                     canWrite && (
                       <button

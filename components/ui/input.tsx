@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 const base =
-  'w-full rounded-md border border-border-strong bg-surface px-3 py-2.5 text-base text-foreground placeholder:text-foreground-muted disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid]:border-danger';
+  'w-full rounded-md border border-border-strong bg-surface px-3 py-2.5 text-base text-foreground placeholder:text-foreground-muted disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid]:border-danger aria-[invalid]:ring-1 aria-[invalid]:ring-danger';
 
 export function Input({ className, ...props }: React.ComponentPropsWithRef<'input'>) {
   return <input className={cn(base, 'min-h-11', className)} {...props} />;
@@ -23,7 +23,10 @@ export function Checkbox({ className, ...props }: React.ComponentPropsWithRef<'i
   return (
     <input
       type="checkbox"
-      className={cn('border-border-strong text-action accent-action size-5 rounded', className)}
+      className={cn(
+        'border-border-strong text-action accent-action aria-[invalid]:ring-danger size-5 rounded aria-[invalid]:ring-2',
+        className,
+      )}
       {...props}
     />
   );

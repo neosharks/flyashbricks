@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { SlidersHorizontal } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { adjustMaterialAction } from '@/features/raw-materials/actions';
-import { ADJUST_MODES } from '@/features/raw-materials/schema';
+import { ADJUST_MODES, AdjustMaterialSchema } from '@/features/raw-materials/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 import { formatQuantity } from '@/lib/quantity';
 import { cn } from '@/lib/utils';
@@ -56,16 +56,27 @@ function AdjustForm({ material, onDone }: Props & { onDone: () => void }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('set');
 
-  const form = useActionForm(adjustMaterialAction, () => {
-    toast.success(t('toasts.adjusted'));
-    onDone();
-    router.refresh();
-  });
+  const form = useActionForm(
+    adjustMaterialAction,
+    () => {
+      toast.success(t('toasts.adjusted'));
+      onDone();
+      router.refresh();
+    },
+    { schema: AdjustMaterialSchema },
+  );
   const unit = tc(`units.${material.unit}`);
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
       <input type="hidden" name="materialId" value={material.id} />
 
       <p className="bg-surface-muted rounded-md px-3 py-2 text-sm">

@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ChevronDown, PackagePlus } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { recordPurchaseAction } from '@/features/raw-materials/actions';
 import { ratePerUnit } from '@/features/raw-materials/forecast';
+import { PurchaseSchema } from '@/features/raw-materials/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 import { formatMoney, parseRupees } from '@/lib/money';
 import { parseQuantity } from '@/lib/quantity';
@@ -57,11 +58,20 @@ function PurchaseForm({ material, onDone }: Props & { onDone: () => void }) {
   const [qty, setQty] = useState('');
   const [cost, setCost] = useState('');
 
-  const form = useActionForm(recordPurchaseAction, () => {
-    toast.success(t('toasts.purchased'));
-    onDone();
-    router.refresh();
-  });
+  const form = useActionForm(
+    recordPurchaseAction,
+    () => {
+      toast.success(t('toasts.purchased'));
+      onDone();
+      router.refresh();
+    },
+    {
+      schema: PurchaseSchema,
+      onInvalid: (fields) => {
+        if (fields.includes('supplier') || fields.includes('note')) setMore(true);
+      },
+    },
+  );
 
   const unit = tc(`units.${material.unit}`);
   const qtyMilli = parseQuantity(qty);
@@ -69,8 +79,15 @@ function PurchaseForm({ material, onDone }: Props & { onDone: () => void }) {
   const rate = qtyMilli && costPaise ? ratePerUnit(costPaise, qtyMilli) : null;
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
       <input type="hidden" name="materialId" value={material.id} />
 
       <Field label={t('purchaseForm.quantity')} required error={form.error('qtyMilli')}>

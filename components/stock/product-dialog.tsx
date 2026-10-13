@@ -1,18 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { BilingualInput } from '@/components/ui/bilingual-input';
-import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
+import { Field, FieldError } from '@/components/ui/field';
 import { Checkbox, Input, Select } from '@/components/ui/input';
 import { createProductAction, updateProductAction } from '@/features/stock/actions';
+import { CreateProductSchema, foldRecipe, UpdateProductSchema } from '@/features/stock/schema';
 import type { MaterialOption } from '@/features/raw-materials/types';
 import type { ProductRow } from '@/features/stock/types';
 import { useActionForm } from '@/hooks/use-action-form';
@@ -69,6 +70,7 @@ function ProductForm({ product, materials, onDone }: Props & { onDone: () => voi
   const tc = useTranslations('common');
   const router = useRouter();
   const editing = product !== undefined;
+  const batchErrorId = useId();
 
   const [lines, setLines] = useState<Line[]>(() =>
     product && product.recipe.length > 0
@@ -85,9 +87,21 @@ function ProductForm({ product, materials, onDone }: Props & { onDone: () => voi
     onDone();
     router.refresh();
   };
-  const create = useActionForm(createProductAction, onSuccess(t('created')));
-  const update = useActionForm(updateProductAction, onSuccess(t('updated')));
+  const create = useActionForm(createProductAction, onSuccess(t('created')), {
+    schema: CreateProductSchema,
+    prepare: foldRecipe,
+  });
+  const update = useActionForm(updateProductAction, onSuccess(t('updated')), {
+    schema: UpdateProductSchema,
+    prepare: foldRecipe,
+  });
   const form = editing ? update : create;
+
+  // `foldRecipe` drops empty rows before numbering, so `recipe.1` is the second filled row.
+  const recipeIndex = new Map<number, number>();
+  for (const line of lines) {
+    if (line.materialId !== '' || line.qty !== '') recipeIndex.set(line.key, recipeIndex.size);
+  }
 
   const unitOf = (materialId: string) => {
     const material = materials.find((option) => option.id === materialId);
@@ -95,8 +109,15 @@ function ProductForm({ product, materials, onDone }: Props & { onDone: () => voi
   };
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
       {editing && <input type="hidden" name="id" value={product.id} />}
 
       <BilingualInput
@@ -109,7 +130,7 @@ function ProductForm({ product, materials, onDone }: Props & { onDone: () => voi
         errors={{ en: form.error('name'), hi: form.error('nameHi') }}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
         <Field label={t('rate')} error={form.error('defaultRatePaise')}>
           {(props) => (
             <AmountInput
@@ -135,95 +156,121 @@ function ProductForm({ product, materials, onDone }: Props & { onDone: () => voi
       <fieldset className="border-border flex flex-col gap-3 rounded-lg border p-3">
         <legend className="px-1 text-sm font-medium">{t('mixTitle')}</legend>
 
-        <label className="flex flex-wrap items-center gap-2 text-sm">
-          {t('batch')}
-          <input
-            name="recipeBatchSize"
-            inputMode="numeric"
-            defaultValue={product?.recipeBatchSize ?? 100}
-            className="border-border-strong bg-surface min-h-10 w-24 rounded-md border px-2 text-base tabular-nums"
-            aria-invalid={form.error('recipeBatchSize') ? true : undefined}
-          />
-          {t('batchSuffix')}
-        </label>
-        {form.error('recipeBatchSize') && (
-          <p className="text-danger text-xs font-medium">{form.error('recipeBatchSize')}</p>
-        )}
+        <div>
+          <label className="flex flex-wrap items-center gap-2 text-sm">
+            {t('batch')}
+            <Input
+              name="recipeBatchSize"
+              inputMode="numeric"
+              defaultValue={product?.recipeBatchSize ?? 100}
+              className="min-h-10 w-24 px-2 tabular-nums"
+              aria-invalid={form.error('recipeBatchSize') ? true : undefined}
+              aria-describedby={form.error('recipeBatchSize') ? batchErrorId : undefined}
+            />
+            {t('batchSuffix')}
+          </label>
+          <div aria-live="polite">
+            {form.error('recipeBatchSize') && (
+              <FieldError id={batchErrorId}>{form.error('recipeBatchSize')}</FieldError>
+            )}
+          </div>
+        </div>
 
-        {materials.length === 0 ? (
-          <p className="text-foreground-muted text-sm">{t('noMaterials')}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {lines.map((line, index) => {
-              const name = materials.find((option) => option.id === line.materialId)?.name ?? '';
-              return (
-                <li key={line.key} className="flex items-start gap-2">
-                  <div className="min-w-0 flex-1">
-                    <label className="sr-only" htmlFor={`recipe-material-${line.key}`}>
-                      {t('material')}
-                    </label>
-                    <Select
-                      id={`recipe-material-${line.key}`}
-                      name="recipe_materialId"
-                      value={line.materialId}
-                      onChange={(event) =>
-                        setLines((current) =>
-                          current.map((item) =>
-                            item.key === line.key
-                              ? { ...item, materialId: event.target.value }
-                              : item,
-                          ),
-                        )
-                      }
-                      aria-invalid={form.error(`recipe.${index}.materialId`) ? true : undefined}
-                    >
-                      <option value="">{t('choose')}</option>
-                      {materials.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="w-32 shrink-0">
-                    <label className="sr-only" htmlFor={`recipe-qty-${line.key}`}>
-                      {t('amount')}
-                    </label>
-                    <AmountInput
-                      id={`recipe-qty-${line.key}`}
-                      name="recipe_qty"
-                      value={line.qty}
-                      suffix={unitOf(line.materialId)}
-                      onChange={(event) =>
-                        setLines((current) =>
-                          current.map((item) =>
-                            item.key === line.key ? { ...item, qty: event.target.value } : item,
-                          ),
-                        )
-                      }
-                      aria-invalid={form.error(`recipe.${index}.qtyMilli`) ? true : undefined}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-danger hover:bg-danger-subtle"
-                    onClick={() =>
-                      setLines((current) => current.filter((item) => item.key !== line.key))
-                    }
-                    aria-label={t('removeMaterial', { name: name || t('material') })}
-                  >
-                    <Trash2 aria-hidden />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {form.error('recipe') && (
-          <p className="text-danger text-xs font-medium">{form.error('recipe')}</p>
-        )}
+        <div>
+          {materials.length === 0 ? (
+            <p className="text-foreground-muted text-sm">{t('noMaterials')}</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {lines.map((line) => {
+                const name = materials.find((option) => option.id === line.materialId)?.name ?? '';
+                const index = recipeIndex.get(line.key);
+                const materialKey = `recipe.${index ?? -1}.materialId`;
+                const qtyKey = `recipe.${index ?? -1}.qtyMilli`;
+                const materialError = form.error(materialKey);
+                const qtyError = form.error(qtyKey);
+                const errorId = `recipe-error-${line.key}`;
+                return (
+                  <li key={line.key} className="flex flex-col">
+                    <div className="flex items-start gap-2">
+                      <div className="min-w-0 flex-1">
+                        <label className="sr-only" htmlFor={`recipe-material-${line.key}`}>
+                          {t('material')}
+                        </label>
+                        <Select
+                          id={`recipe-material-${line.key}`}
+                          name="recipe_materialId"
+                          value={line.materialId}
+                          onChange={(event) =>
+                            setLines((current) =>
+                              current.map((item) =>
+                                item.key === line.key
+                                  ? { ...item, materialId: event.target.value }
+                                  : item,
+                              ),
+                            )
+                          }
+                          data-error-key={materialKey}
+                          aria-invalid={materialError ? true : undefined}
+                          aria-describedby={materialError ? errorId : undefined}
+                        >
+                          <option value="">{t('choose')}</option>
+                          {materials.map((option) => (
+                            <option key={option.id} value={option.id}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+                      <div className="w-32 shrink-0">
+                        <label className="sr-only" htmlFor={`recipe-qty-${line.key}`}>
+                          {t('amount')}
+                        </label>
+                        <AmountInput
+                          id={`recipe-qty-${line.key}`}
+                          name="recipe_qty"
+                          value={line.qty}
+                          suffix={unitOf(line.materialId)}
+                          onChange={(event) =>
+                            setLines((current) =>
+                              current.map((item) =>
+                                item.key === line.key ? { ...item, qty: event.target.value } : item,
+                              ),
+                            )
+                          }
+                          data-error-key={qtyKey}
+                          aria-invalid={qtyError ? true : undefined}
+                          aria-describedby={qtyError ? errorId : undefined}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-danger hover:bg-danger-subtle"
+                        onClick={() =>
+                          setLines((current) => current.filter((item) => item.key !== line.key))
+                        }
+                        aria-label={t('removeMaterial', { name: name || t('material') })}
+                      >
+                        <Trash2 aria-hidden />
+                      </Button>
+                    </div>
+                    <div aria-live="polite">
+                      {(materialError ?? qtyError) && (
+                        <FieldError id={errorId}>
+                          {[materialError, qtyError].filter(Boolean).join(' ')}
+                        </FieldError>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <div aria-live="polite">
+            {form.error('recipe') && <FieldError>{form.error('recipe')}</FieldError>}
+          </div>
+        </div>
 
         {materials.length > 0 && lines.length < LIMITS.recipeItems && (
           <Button

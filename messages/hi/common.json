@@ -109,6 +109,9 @@
   "forbiddenTitle": "आपको इसकी अनुमति नहीं है",
   "forbiddenBody": "इस भाग की अनुमति के लिए एडमिन से कहें।",
   "moreOptions": "और विकल्प",
+  "formErrors": {
+    "title": "{count, plural, one {# बॉक्स में सुधार चाहिए} other {# बॉक्स में सुधार चाहिए}}"
+  },
   "bilingual": {
     "english": "{label} — अंग्रेज़ी (English)",
     "hindi": "{label} — हिन्दी",

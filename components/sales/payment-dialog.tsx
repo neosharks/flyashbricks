@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { IndianRupee } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { addPaymentAction } from '@/features/sales/actions';
+import { AddPaymentSchema } from '@/features/sales/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 import { formatMoney, paiseToInput } from '@/lib/money';
 import { PAYMENT_MODES, type PaymentMode } from '@/models/constants';
@@ -34,12 +35,16 @@ export function PaymentDialog({
   const [amount, setAmount] = useState('');
   const [mode, setMode] = useState<PaymentMode>('cash');
 
-  const form = useActionForm(addPaymentAction, () => {
-    toast.success(t('payment.saved'));
-    setOpen(false);
-    setAmount('');
-    router.refresh();
-  });
+  const form = useActionForm(
+    addPaymentAction,
+    () => {
+      toast.success(t('payment.saved'));
+      setOpen(false);
+      setAmount('');
+      router.refresh();
+    },
+    { schema: AddPaymentSchema },
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -53,8 +58,15 @@ export function PaymentDialog({
         title={t('payment.title')}
         description={t('payment.description', { amount: formatMoney(duePaise, locale) })}
       >
-        <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-          {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+        <form
+          method="post"
+          onSubmit={form.onSubmit}
+          onChange={form.onChange}
+          onBlur={form.onBlur}
+          className="flex flex-col gap-4"
+          noValidate
+        >
+          <FormErrors form={form} />
           <input type="hidden" name="saleId" value={saleId} />
 
           <Field label={t('payment.amount')} required error={form.error('amount')}>

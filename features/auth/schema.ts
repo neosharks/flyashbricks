@@ -3,7 +3,7 @@ import { z } from 'zod';
 /** Either a phone number or an email address; resolved in `lib/auth.ts`. */
 export const CredentialsSchema = z
   .object({
-    identifier: z.string().trim().min(3).max(254),
+    identifier: z.string().trim().min(1, 'required').min(3).max(254),
     password: z.string().min(1).max(200),
   })
   .strict();

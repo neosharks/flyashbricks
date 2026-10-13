@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ChevronDown, Pencil, Plus } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { BilingualInput } from '@/components/ui/bilingual-input';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Checkbox, Select } from '@/components/ui/input';
 import { createMaterialAction, updateMaterialAction } from '@/features/raw-materials/actions';
+import { CreateMaterialSchema, UpdateMaterialSchema } from '@/features/raw-materials/schema';
 import type { MaterialRow } from '@/features/raw-materials/types';
 import { useActionForm } from '@/hooks/use-action-form';
 import { quantityToInput } from '@/lib/quantity';
@@ -59,22 +60,41 @@ function MaterialForm({ material, onDone }: Props & { onDone: () => void }) {
   const [unit, setUnit] = useState<Unit>(material?.unit ?? 'kg');
   const [more, setMore] = useState(false);
 
-  const create = useActionForm(createMaterialAction, () => {
-    toast.success(t('toasts.created'));
-    onDone();
-    router.refresh();
-  });
-  const update = useActionForm(updateMaterialAction, () => {
-    toast.success(t('toasts.updated'));
-    onDone();
-    router.refresh();
-  });
+  // Capacity sits under "More options"; open it when that is what needs fixing.
+  const onInvalid = (fields: string[]) => {
+    if (fields.includes('capacityMilli')) setMore(true);
+  };
+  const create = useActionForm(
+    createMaterialAction,
+    () => {
+      toast.success(t('toasts.created'));
+      onDone();
+      router.refresh();
+    },
+    { schema: CreateMaterialSchema, onInvalid },
+  );
+  const update = useActionForm(
+    updateMaterialAction,
+    () => {
+      toast.success(t('toasts.updated'));
+      onDone();
+      router.refresh();
+    },
+    { schema: UpdateMaterialSchema, onInvalid },
+  );
   const form = editing ? update : create;
   const unitLabel = tc(`units.${unit}`);
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
       {editing && <input type="hidden" name="id" value={material.id} />}
 
       <BilingualInput
@@ -87,7 +107,7 @@ function MaterialForm({ material, onDone }: Props & { onDone: () => void }) {
         errors={{ en: form.error('name'), hi: form.error('nameHi') }}
       />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
         <Field label={t('form.kind')} required error={form.error('kind')}>
           {(props) => (
             <Select {...props} name="kind" defaultValue={material?.kind ?? 'fly_ash'}>

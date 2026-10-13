@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Pencil, UserPlus } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { BilingualInput } from '@/components/ui/bilingual-input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Disclosure } from '@/components/ui/disclosure';
-import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
+import { Field, Fieldset } from '@/components/ui/field';
 import { Checkbox, Input, Select, Textarea } from '@/components/ui/input';
 import { createStaffAction, updateStaffAction } from '@/features/staff/actions';
+import { CreateStaffSchema, UpdateStaffSchema } from '@/features/staff/schema';
 import type { StaffRow } from '@/features/staff/types';
 import { useActionForm } from '@/hooks/use-action-form';
 import { paiseToInput } from '@/lib/money';
@@ -67,10 +68,16 @@ export function StaffDialog({
     setOpen(false);
     router.refresh();
   };
-  const create = useActionForm(createStaffAction, onSaved);
-  const update = useActionForm(updateStaffAction, onSaved);
+  const create = useActionForm(createStaffAction, onSaved, {
+    schema: CreateStaffSchema,
+    translate: translateError,
+  });
+  const update = useActionForm(updateStaffAction, onSaved, {
+    schema: UpdateStaffSchema,
+    translate: translateError,
+  });
   const form = editing ? update : create;
-  const error = (field: string) => translateError(form.error(field));
+  const error = form.error;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -97,10 +104,12 @@ export function StaffDialog({
           key={staff?.id ?? 'new'}
           method="post"
           onSubmit={form.onSubmit}
+          onChange={form.onChange}
+          onBlur={form.onBlur}
           className="flex flex-col gap-5"
           noValidate
         >
-          {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+          <FormErrors form={form} />
           {editing && <input type="hidden" name="id" value={staff.id} />}
 
           <BilingualInput
@@ -113,13 +122,12 @@ export function StaffDialog({
             errors={{ en: error('name'), hi: error('nameHi') }}
           />
 
-          <fieldset>
-            <legend className="mb-2 text-sm font-medium">
-              {tg('label')}
-              {staff?.gender === 'unspecified' && (
-                <span className="text-warning ml-2 text-xs font-normal">{tg('notSet')}</span>
-              )}
-            </legend>
+          <Fieldset
+            legend={tg('label')}
+            required
+            hint={staff?.gender === 'unspecified' ? tg('notSet') : undefined}
+            error={error('gender')}
+          >
             <div className="grid grid-cols-3 gap-2">
               {(['male', 'female', 'other'] as const).map((option) => (
                 <label
@@ -148,10 +156,7 @@ export function StaffDialog({
                 </label>
               ))}
             </div>
-            {error('gender') && (
-              <p className="text-danger mt-1 text-xs font-medium">{error('gender')}</p>
-            )}
-          </fieldset>
+          </Fieldset>
 
           <fieldset>
             <legend className="mb-2 text-sm font-medium">{t('form.role')}</legend>

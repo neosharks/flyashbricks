@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { BadgeIndianRupee, Gift, HandCoins, MinusCircle } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Disclosure } from '@/components/ui/disclosure';
 import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Input } from '@/components/ui/input';
 import { recordStaffPaymentAction } from '@/features/staff/actions';
+import { StaffPaymentSchema } from '@/features/staff/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 import { formatMoney, paiseToInput } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -62,11 +63,15 @@ export function StaffPaymentDialog({
   const [amount, setAmount] = useState(type === 'wage' && owed > 0 ? paiseToInput(owed) : '');
   const [mode, setMode] = useState<PaymentMode>('cash');
 
-  const form = useActionForm(recordStaffPaymentAction, () => {
-    toast.success(t('payment.saved'));
-    setOpen(false);
-    router.refresh();
-  });
+  const form = useActionForm(
+    recordStaffPaymentAction,
+    () => {
+      toast.success(t('payment.saved'));
+      setOpen(false);
+      router.refresh();
+    },
+    { schema: StaffPaymentSchema, translate: translateError },
+  );
   const Icon = ICONS[type];
 
   return (
@@ -81,8 +86,15 @@ export function StaffPaymentDialog({
         title={t(`payment.titles.${type}`, { name })}
         description={t(`payment.hints.${type}`)}
       >
-        <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-          {form.formError && !form.error('amount') && <Alert tone="danger">{form.formError}</Alert>}
+        <form
+          method="post"
+          onSubmit={form.onSubmit}
+          onChange={form.onChange}
+          onBlur={form.onBlur}
+          className="flex flex-col gap-4"
+          noValidate
+        >
+          <FormErrors form={form} />
           <input type="hidden" name="staffId" value={staffId} />
           <input type="hidden" name="type" value={type} />
 
@@ -92,7 +104,7 @@ export function StaffPaymentDialog({
             </p>
           )}
 
-          <Field label={t('payment.amount')} required error={translateError(form.error('amount'))}>
+          <Field label={t('payment.amount')} required error={form.error('amount')}>
             {(props) => (
               <div className="flex gap-2">
                 <div className="flex-1">
@@ -146,7 +158,7 @@ export function StaffPaymentDialog({
             </div>
           </fieldset>
 
-          <Field label={t('payment.date')} required error={translateError(form.error('date'))}>
+          <Field label={t('payment.date')} required error={form.error('date')}>
             {(props) => (
               <Input {...props} type="date" name="date" defaultValue={today} max={today} required />
             )}
@@ -157,10 +169,7 @@ export function StaffPaymentDialog({
             defaultOpen={type === 'wage' && period !== undefined}
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field
-                label={t('payment.periodFrom')}
-                error={translateError(form.error('periodFrom'))}
-              >
+              <Field label={t('payment.periodFrom')} error={form.error('periodFrom')}>
                 {(props) => (
                   <Input
                     {...props}
@@ -171,7 +180,7 @@ export function StaffPaymentDialog({
                   />
                 )}
               </Field>
-              <Field label={t('payment.periodTo')} error={translateError(form.error('periodTo'))}>
+              <Field label={t('payment.periodTo')} error={form.error('periodTo')}>
                 {(props) => (
                   <Input
                     {...props}
@@ -182,11 +191,7 @@ export function StaffPaymentDialog({
                   />
                 )}
               </Field>
-              <Field
-                label={t('payment.note')}
-                error={translateError(form.error('note'))}
-                className="sm:col-span-2"
-              >
+              <Field label={t('payment.note')} error={form.error('note')} className="sm:col-span-2">
                 {(props) => <Input {...props} name="note" />}
               </Field>
             </div>

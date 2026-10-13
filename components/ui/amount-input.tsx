@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 const base =
-  'w-full rounded-md border border-border-strong bg-surface py-2.5 text-base text-foreground tabular-nums placeholder:text-foreground-subtle disabled:opacity-60 aria-[invalid]:border-danger min-h-11';
+  'w-full rounded-md border border-border-strong bg-surface py-2.5 text-base text-foreground tabular-nums placeholder:text-foreground-subtle disabled:opacity-60 aria-[invalid]:border-danger aria-[invalid]:ring-1 aria-[invalid]:ring-danger min-h-11';
 
 /**
  * Text, not `type="number"`: number inputs reject "1,250", change value on

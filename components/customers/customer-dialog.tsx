@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Plus, X } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BilingualInput } from '@/components/ui/bilingual-input';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { DEFAULT_STATE_CODE, GST_STATES, STATE_CODES } from '@/lib/gst';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { createCustomerAction, updateCustomerAction } from '@/features/customers/actions';
+import { CreateCustomerSchema, UpdateCustomerSchema } from '@/features/customers/schema';
 import type { CustomerRow } from '@/features/customers/types';
 import { useActionForm } from '@/hooks/use-action-form';
 import { LIMITS } from '@/models/constants';
@@ -48,17 +49,32 @@ export function CustomerDialog({
   );
   const [nextKey, setNextKey] = useState(rows.length);
 
-  const create = useActionForm(createCustomerAction, (data) => {
-    toast.success(t('created'));
-    onOpenChange(false);
-    router.push(`/customers/${data.id}`);
-  });
-  const update = useActionForm(updateCustomerAction, () => {
-    toast.success(t('updated'));
-    onOpenChange(false);
-    router.refresh();
-  });
+  const create = useActionForm(
+    createCustomerAction,
+    (data) => {
+      toast.success(t('created'));
+      onOpenChange(false);
+      router.push(`/customers/${data.id}`);
+    },
+    { schema: CreateCustomerSchema },
+  );
+  const update = useActionForm(
+    updateCustomerAction,
+    () => {
+      toast.success(t('updated'));
+      onOpenChange(false);
+      router.refresh();
+    },
+    { schema: UpdateCustomerSchema },
+  );
   const form = editing ? update : create;
+
+  // The schema drops blank rows before numbering the rest, so an error on
+  // `phones.1` belongs to the second filled row, not the second row.
+  const phoneKeys = new Map<number, string>();
+  for (const row of rows) {
+    if (row.phone.trim() !== '') phoneKeys.set(row.key, `phones.${phoneKeys.size}`);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,8 +82,15 @@ export function CustomerDialog({
         title={editing ? t('form.editTitle') : t('form.newTitle')}
         description={t('form.description')}
       >
-        <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-          {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+        <form
+          method="post"
+          onSubmit={form.onSubmit}
+          onChange={form.onChange}
+          onBlur={form.onBlur}
+          className="flex flex-col gap-4"
+          noValidate
+        >
+          <FormErrors form={form} />
           {editing && <input type="hidden" name="id" value={customer.id} />}
 
           <BilingualInput
@@ -82,53 +105,56 @@ export function CustomerDialog({
 
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-1 text-sm font-medium">{t('form.phones')}</legend>
-            {rows.map((row, index) => (
-              <div key={row.key} className="flex items-start gap-2">
-                <Field
-                  label={t('form.phone', { index: index + 1 })}
-                  className="flex-1 [&>label]:sr-only"
-                  required={index === 0}
-                  error={
-                    form.error(`phones.${index}`) ??
-                    (index === 0 ? form.error('phones') : undefined)
-                  }
-                >
-                  {(props) => (
-                    <PhoneInput
-                      {...props}
-                      name="phones"
-                      value={row.phone}
-                      placeholder={t('form.phonePlaceholder')}
-                      onChange={(event) =>
-                        setRows((current) =>
-                          current.map((item) =>
-                            item.key === row.key ? { ...item, phone: event.target.value } : item,
-                          ),
-                        )
-                      }
-                    />
-                  )}
-                </Field>
-                {index === 0 ? (
-                  <span className="bg-action-subtle text-action mt-2.5 rounded px-2 py-1 text-xs font-medium">
-                    {t('form.primary')}
-                  </span>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-danger hover:bg-danger-subtle"
-                    aria-label={t('form.removePhone', { index: index + 1 })}
-                    onClick={() =>
-                      setRows((current) => current.filter((item) => item.key !== row.key))
+            {rows.map((row, index) => {
+              const key = phoneKeys.get(row.key);
+              return (
+                <div key={row.key} className="flex items-start gap-2">
+                  <Field
+                    label={t('form.phone', { index: index + 1 })}
+                    className="flex-1 [&>label]:sr-only"
+                    required={index === 0}
+                    error={
+                      (key && form.error(key)) ?? (index === 0 ? form.error('phones') : undefined)
                     }
                   >
-                    <X aria-hidden />
-                  </Button>
-                )}
-              </div>
-            ))}
+                    {(props) => (
+                      <PhoneInput
+                        {...props}
+                        data-error-key={key}
+                        name="phones"
+                        value={row.phone}
+                        placeholder={t('form.phonePlaceholder')}
+                        onChange={(event) =>
+                          setRows((current) =>
+                            current.map((item) =>
+                              item.key === row.key ? { ...item, phone: event.target.value } : item,
+                            ),
+                          )
+                        }
+                      />
+                    )}
+                  </Field>
+                  {index === 0 ? (
+                    <span className="bg-action-subtle text-action mt-2.5 rounded px-2 py-1 text-xs font-medium">
+                      {t('form.primary')}
+                    </span>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-danger hover:bg-danger-subtle"
+                      aria-label={t('form.removePhone', { index: index + 1 })}
+                      onClick={() =>
+                        setRows((current) => current.filter((item) => item.key !== row.key))
+                      }
+                    >
+                      <X aria-hidden />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
             <p className="text-foreground-muted text-xs">{t('form.phoneHint')}</p>
             {rows.length < LIMITS.phonesPerCustomer && (
               <Button

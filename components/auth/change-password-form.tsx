@@ -4,11 +4,12 @@ import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Alert } from '@/components/ui/alert';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Button } from '@/components/ui/button';
 import { changePassword } from '@/features/auth/actions';
+import { ChangePasswordSchema } from '@/features/auth/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 
 /** Used both for the forced first-time password and for changing it later. */
@@ -22,22 +23,28 @@ export function ChangePasswordForm({
   const t = useTranslations('auth');
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const form = useActionForm(changePassword, () => {
-    toast.success(t('passwordChanged'));
-    formRef.current?.reset();
-    if (redirectTo) router.replace(redirectTo);
-    router.refresh();
-  });
+  const form = useActionForm(
+    changePassword,
+    () => {
+      toast.success(t('passwordChanged'));
+      formRef.current?.reset();
+      if (redirectTo) router.replace(redirectTo);
+      router.refresh();
+    },
+    { schema: ChangePasswordSchema },
+  );
 
   return (
     <form
       ref={formRef}
       method="post"
       onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
       className="flex flex-col gap-4"
       noValidate
     >
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+      <FormErrors form={form} />
 
       <Field
         label={temporary ? t('temporaryPassword') : t('currentPassword')}

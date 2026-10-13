@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { SlidersHorizontal } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { localToday } from '@/components/raw-materials/today';
 import { adjustStockAction } from '@/features/stock/actions';
-import { STOCK_ADJUST_MODES } from '@/features/stock/schema';
+import { AdjustStockSchema, STOCK_ADJUST_MODES } from '@/features/stock/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 import { cn, formatNumber } from '@/lib/utils';
 
@@ -52,15 +52,26 @@ function CorrectionForm({ product, onDone }: { product: Product; onDone: () => v
   const locale = useLocale();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>('remove');
-  const form = useActionForm(adjustStockAction, () => {
-    toast.success(t('done'));
-    onDone();
-    router.refresh();
-  });
+  const form = useActionForm(
+    adjustStockAction,
+    () => {
+      toast.success(t('done'));
+      onDone();
+      router.refresh();
+    },
+    { schema: AdjustStockSchema },
+  );
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
       <input type="hidden" name="productId" value={product.id} />
 
       <p className="bg-surface-muted rounded-md px-3 py-2 text-sm">

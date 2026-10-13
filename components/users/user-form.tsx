@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Bell, ShieldCheck, UserRound } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { BilingualInput } from '@/components/ui/bilingual-input';
-import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
+import { Field, FieldError, Fieldset } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { createUser, updateUser } from '@/features/users/actions';
+import { CreateUserSchema, foldPermissions, UpdateUserSchema } from '@/features/users/schema';
 import type { UserRow } from '@/features/users/types';
 import { useActionForm } from '@/hooks/use-action-form';
 import { NO_ACCESS, ROLES, type Permissions, type Role } from '@/lib/permissions';
@@ -45,22 +46,30 @@ export function UserForm({ user, actorIsAdmin, ceiling, isSelf = false }: UserFo
   const [gender, setGender] = useState<Gender>(user?.gender ?? 'unspecified');
   const locale = useLocale();
 
-  const create = useActionForm(createUser, (data) => {
-    toast.success(t('created'));
-    // The name as the admin typed it, in the language they are reading.
-    const fields = formRef.current ? new FormData(formRef.current) : null;
-    const read = (key: string) => {
-      const value = fields?.get(key);
-      return typeof value === 'string' ? value : '';
-    };
-    const typed = read(locale === 'hi' ? 'nameHi' : 'name');
-    const fallback = read(locale === 'hi' ? 'name' : 'nameHi');
-    setIssued({ id: data.id, name: typed || fallback, password: data.temporaryPassword });
-  });
-  const update = useActionForm(updateUser, () => {
-    toast.success(t('updated'));
-    router.refresh();
-  });
+  const create = useActionForm(
+    createUser,
+    (data) => {
+      toast.success(t('created'));
+      // The name as the admin typed it, in the language they are reading.
+      const fields = formRef.current ? new FormData(formRef.current) : null;
+      const read = (key: string) => {
+        const value = fields?.get(key);
+        return typeof value === 'string' ? value : '';
+      };
+      const typed = read(locale === 'hi' ? 'nameHi' : 'name');
+      const fallback = read(locale === 'hi' ? 'name' : 'nameHi');
+      setIssued({ id: data.id, name: typed || fallback, password: data.temporaryPassword });
+    },
+    { schema: CreateUserSchema, prepare: foldPermissions },
+  );
+  const update = useActionForm(
+    updateUser,
+    () => {
+      toast.success(t('updated'));
+      router.refresh();
+    },
+    { schema: UpdateUserSchema, prepare: foldPermissions },
+  );
   const form = editing ? update : create;
   const lockAccess = isSelf;
 
@@ -70,10 +79,12 @@ export function UserForm({ user, actorIsAdmin, ceiling, isSelf = false }: UserFo
         ref={formRef}
         method="post"
         onSubmit={form.onSubmit}
+        onChange={form.onChange}
+        onBlur={form.onBlur}
         className="flex flex-col gap-6"
         noValidate
       >
-        {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+        <FormErrors form={form} />
         {editing && <input type="hidden" name="id" value={user.id} />}
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -131,10 +142,7 @@ export function UserForm({ user, actorIsAdmin, ceiling, isSelf = false }: UserFo
           </Field>
         </section>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">
-            {tg('label')} <span className="text-danger">*</span>
-          </legend>
+        <Fieldset legend={tg('label')} required error={form.error('gender')}>
           <div className="grid grid-cols-3 gap-2">
             {(['male', 'female', 'other'] as const).map((option) => (
               <label
@@ -158,17 +166,14 @@ export function UserForm({ user, actorIsAdmin, ceiling, isSelf = false }: UserFo
               </label>
             ))}
           </div>
-          {/* Accounts made before gender was asked keep "not set" until someone chooses. */}
-          {gender === 'unspecified' && (
-            <>
-              <input type="hidden" name="gender" value="unspecified" />
-              {editing && <p className="text-warning text-xs">{tg('notSet')}</p>}
-            </>
-          )}
-          {form.error('gender') && (
-            <p className="text-danger text-xs font-medium">{form.error('gender')}</p>
-          )}
-        </fieldset>
+        </Fieldset>
+        {/* Accounts made before gender was asked keep "not set" until someone chooses. */}
+        {gender === 'unspecified' && (
+          <>
+            <input type="hidden" name="gender" value="unspecified" />
+            {editing && <p className="text-warning -mt-4 text-xs">{tg('notSet')}</p>}
+          </>
+        )}
 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-2 text-sm font-medium">{t('form.role')}</legend>
@@ -221,14 +226,13 @@ export function UserForm({ user, actorIsAdmin, ceiling, isSelf = false }: UserFo
             onChange={setPermissions}
             disabled={role === 'admin' || lockAccess}
             ceiling={ceiling}
+            error={form.error}
           />
           {(role === 'admin' || lockAccess) &&
             Object.entries(permissions).map(([module, level]) => (
               <input key={module} type="hidden" name={`perm_${module}`} value={level} />
             ))}
-          {form.error('permissions') && (
-            <p className="text-danger text-xs font-medium">{form.error('permissions')}</p>
-          )}
+          {form.error('permissions') && <FieldError>{form.error('permissions')}</FieldError>}
         </fieldset>
 
         <p className="text-foreground-muted flex items-start gap-2 text-xs">

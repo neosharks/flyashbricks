@@ -19,7 +19,7 @@ export function PhoneInput({
         autoComplete="tel-national"
         maxLength={16}
         className={cn(
-          'border-border-strong bg-surface text-foreground placeholder:text-foreground-subtle aria-[invalid]:border-danger min-h-11 w-full rounded-md border py-2.5 pr-3 pl-12 text-base tabular-nums',
+          'border-border-strong bg-surface text-foreground placeholder:text-foreground-subtle aria-[invalid]:border-danger aria-[invalid]:ring-danger min-h-11 w-full rounded-md border py-2.5 pr-3 pl-12 text-base tabular-nums aria-[invalid]:ring-1',
           className,
         )}
         {...props}

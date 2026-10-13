@@ -40,6 +40,17 @@ export default defineConfig(
     },
     rules: {
       ...jsxA11y.flatConfigs.strict.rules,
+      // A form listens for its fields' changes and blurs (event delegation) to
+      // check them as they are filled in; the fields themselves stay the controls.
+      'jsx-a11y/no-noninteractive-element-interactions': [
+        'error',
+        {
+          body: ['onError', 'onLoad'],
+          iframe: ['onError', 'onLoad'],
+          img: ['onError', 'onLoad'],
+          form: ['onChange', 'onBlur'],
+        },
+      ],
       'jsx-a11y/label-has-associated-control': [
         'error',
         { controlComponents: ['Checkbox', 'Input', 'Select', 'Textarea'], depth: 3 },

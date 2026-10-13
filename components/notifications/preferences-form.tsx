@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Alert } from '@/components/ui/alert';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Button } from '@/components/ui/button';
 import { updatePreferences } from '@/features/notifications/actions';
 import { useActionForm } from '@/hooks/use-action-form';
@@ -37,8 +38,14 @@ export function PreferencesForm({
   });
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4">
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+    >
+      <FormErrors form={form} />
       {!hasEmail && <Alert tone="info">{t('prefs.noEmail')}</Alert>}
 
       {NOTIFICATION_CATEGORIES.map((category) => (

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Check, Search, UserPlus, Users } from 'lucide-react';
 import { BilingualInput } from '@/components/ui/bilingual-input';
-import { Field } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { Spinner } from '@/components/ui/spinner';
@@ -38,6 +38,8 @@ export function CustomerPicker({
   const [pending, startTransition] = useTransition();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const changed = useRef(onChange);
+  const errorId = useId();
+  const customerError = error('customerId');
 
   useEffect(() => {
     changed.current = onChange;
@@ -151,6 +153,10 @@ export function CustomerPicker({
               </span>
               <Input
                 type="search"
+                // The chosen customer posts from a hidden field; this is where it is chosen.
+                data-error-key="customerId"
+                aria-invalid={customerError ? true : undefined}
+                aria-describedby={customerError ? errorId : undefined}
                 aria-label={t('searchCustomer')}
                 placeholder={t('searchCustomer')}
                 value={query}
@@ -195,9 +201,7 @@ export function CustomerPicker({
                 ))}
               </ul>
             )}
-            {error('customerId') && (
-              <p className="text-danger text-xs font-medium">{error('customerId')}</p>
-            )}
+            {customerError && <FieldError id={errorId}>{customerError}</FieldError>}
           </div>
         )
       ) : (

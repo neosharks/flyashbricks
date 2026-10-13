@@ -9,9 +9,11 @@ import { Alert } from '@/components/ui/alert';
 import { AmountInput } from '@/components/ui/amount-input';
 import { RateComparison } from './rate-comparison';
 import { Button } from '@/components/ui/button';
-import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
+import { Field, FieldError } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { createSaleAction } from '@/features/sales/actions';
+import { CreateSaleSchema, foldLines } from '@/features/sales/schema';
 import type { CustomerOption } from '@/features/customers/types';
 import type { ProductOption } from '@/features/sales/types';
 import { computeSaleTotals } from '@/features/sales/totals';
@@ -56,6 +58,16 @@ function Step({
   );
 }
 
+/** The fields under "More options", opened when one of them needs fixing. */
+const EXTRA_FIELDS = new Set([
+  'date',
+  'vehicleNo',
+  'delivery',
+  'discount',
+  'deliveryAddress',
+  'note',
+]);
+
 const toInt = (text: string): number => {
   const cleaned = text.replace(/[,\s]/g, '');
   return /^\d{1,9}$/.test(cleaned) ? Number(cleaned) : 0;
@@ -91,10 +103,20 @@ export function NewSaleForm({ products, today, initialCustomer, org }: NewSaleFo
   const [payment, setPayment] = useState('');
   const [mode, setMode] = useState<PaymentMode>('cash');
 
-  const form = useActionForm(createSaleAction, (data) => {
-    toast.success(ts('created'));
-    router.push(`/sales/${data.id}`);
-  });
+  const form = useActionForm(
+    createSaleAction,
+    (data) => {
+      toast.success(ts('created'));
+      router.push(`/sales/${data.id}`);
+    },
+    {
+      schema: CreateSaleSchema,
+      prepare: foldLines,
+      onInvalid: (fields) => {
+        if (fields.some((field) => EXTRA_FIELDS.has(field))) setMore(true);
+      },
+    },
+  );
 
   const byId = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
 
@@ -133,10 +155,12 @@ export function NewSaleForm({ products, today, initialCustomer, org }: NewSaleFo
     <form
       method="post"
       onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
       className="flex flex-col gap-4 pb-28 lg:pb-0"
       noValidate
     >
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+      <FormErrors form={form} />
 
       <Step number={1} title={t('customer')}>
         <CustomerPicker
@@ -208,7 +232,7 @@ export function NewSaleForm({ products, today, initialCustomer, org }: NewSaleFo
                   )}
                 </Field>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
                   <Field
                     label={t('qty')}
                     required
@@ -287,9 +311,9 @@ export function NewSaleForm({ products, today, initialCustomer, org }: NewSaleFo
             {t('addLine')}
           </Button>
         )}
-        {form.error('lines') && (
-          <p className="text-danger mt-2 text-xs font-medium">{form.error('lines')}</p>
-        )}
+        <div aria-live="polite">
+          {form.error('lines') && <FieldError>{form.error('lines')}</FieldError>}
+        </div>
       </Step>
 
       <Step number={3} title={t('payment')}>

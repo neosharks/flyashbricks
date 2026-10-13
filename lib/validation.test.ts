@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { fieldErrors, formDataToObject } from './action';
+import { fieldErrors, formDataToObject } from './validation';
 
 describe('formDataToObject', () => {
   it('converts plain fields to a parseable object', () => {

@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Undo2 } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { voidProductionAction } from '@/features/production/actions';
+import { VoidProductionSchema } from '@/features/production/schema';
 import { useActionForm } from '@/hooks/use-action-form';
 
 /** Cancels a wrong entry; asks why, because it rewrites stock on two sides. */
@@ -36,15 +37,26 @@ export function VoidProductionDialog({ id }: { id: string }) {
 function VoidForm({ id, onDone }: { id: string; onDone: () => void }) {
   const t = useTranslations('production');
   const router = useRouter();
-  const form = useActionForm(voidProductionAction, () => {
-    toast.success(t('toasts.voided'));
-    onDone();
-    router.refresh();
-  });
+  const form = useActionForm(
+    voidProductionAction,
+    () => {
+      toast.success(t('toasts.voided'));
+      onDone();
+      router.refresh();
+    },
+    { schema: VoidProductionSchema },
+  );
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
       <input type="hidden" name="id" value={id} />
       <Field label={t('void.reason')} required error={form.error('reason')}>
         {(props) => (

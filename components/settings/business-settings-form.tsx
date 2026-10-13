@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Building2, Landmark, ReceiptText } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Disclosure } from '@/components/ui/disclosure';
 import { BilingualInput } from '@/components/ui/bilingual-input';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { updateBusinessSettings } from '@/features/settings/actions';
-import { GST_RATES_BPS } from '@/features/settings/schema';
+import { BusinessSettingsSchema, GST_RATES_BPS } from '@/features/settings/schema';
 import type { BusinessSettingsValues } from '@/features/settings/queries';
 import { useActionForm } from '@/hooks/use-action-form';
 import { GST_STATES, STATE_CODES } from '@/lib/gst';
@@ -50,14 +50,25 @@ export function BusinessSettingsForm({ values }: { values: BusinessSettingsValue
   const tc = useTranslations('common');
   const router = useRouter();
   const [gst, setGst] = useState(values.gstRegistered);
-  const form = useActionForm(updateBusinessSettings, () => {
-    toast.success(t('saved'));
-    router.refresh();
-  });
+  const form = useActionForm(
+    updateBusinessSettings,
+    () => {
+      toast.success(t('saved'));
+      router.refresh();
+    },
+    { schema: BusinessSettingsSchema },
+  );
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-6" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-6"
+      noValidate
+    >
+      <FormErrors form={form} />
 
       <Section icon={Building2} title={t('business.title')} hint={t('business.hint')}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -161,7 +172,8 @@ export function BusinessSettingsForm({ values }: { values: BusinessSettingsValue
               >
                 <input
                   type="radio"
-                  name="gstChoice"
+                  name="gstRegistered"
+                  value={String(option)}
                   className="sr-only"
                   checked={gst === option}
                   onChange={() => setGst(option)}
@@ -170,7 +182,6 @@ export function BusinessSettingsForm({ values }: { values: BusinessSettingsValue
               </label>
             ))}
           </div>
-          {gst && <input type="hidden" name="gstRegistered" value="on" />}
         </fieldset>
 
         {gst ? (

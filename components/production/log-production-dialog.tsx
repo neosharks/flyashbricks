@@ -9,10 +9,12 @@ import { AlertTriangle, ChevronDown, Factory, Plus } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Field } from '@/components/ui/field';
 import { Input, Select } from '@/components/ui/input';
 import { localToday } from '@/components/raw-materials/today';
 import { logProductionAction } from '@/features/production/actions';
+import { LogProductionSchema } from '@/features/production/schema';
 import { plannedConsumption } from '@/features/production/consumption';
 import type { ProductOption } from '@/features/production/types';
 import { useActionForm } from '@/hooks/use-action-form';
@@ -79,11 +81,20 @@ function LogForm({ products, onDone }: { products: ProductOption[]; onDone: () =
   const [defective, setDefective] = useState('');
   const [more, setMore] = useState(false);
 
-  const form = useActionForm(logProductionAction, () => {
-    toast.success(tp('toasts.logged'));
-    onDone();
-    router.refresh();
-  });
+  const form = useActionForm(
+    logProductionAction,
+    () => {
+      toast.success(tp('toasts.logged'));
+      onDone();
+      router.refresh();
+    },
+    {
+      schema: LogProductionSchema,
+      onInvalid: (fields) => {
+        if (fields.includes('note')) setMore(true);
+      },
+    },
+  );
 
   const product = products.find((option) => option.id === productId);
   const bricks = toCount(good) + toCount(defective);
@@ -100,8 +111,15 @@ function LogForm({ products, onDone }: { products: ProductOption[]; onDone: () =
   const short = preview.filter((line) => line.short);
 
   return (
-    <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-      {form.formError && <Alert tone="danger">{form.formError}</Alert>}
+    <form
+      method="post"
+      onSubmit={form.onSubmit}
+      onChange={form.onChange}
+      onBlur={form.onBlur}
+      className="flex flex-col gap-4"
+      noValidate
+    >
+      <FormErrors form={form} />
 
       {products.length === 1 ? (
         <>
@@ -132,7 +150,7 @@ function LogForm({ products, onDone }: { products: ProductOption[]; onDone: () =
         </Field>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
         <Field label={t('good')} required error={form.error('goodQty')}>
           {(props) => (
             <Input

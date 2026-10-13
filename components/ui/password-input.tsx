@@ -18,7 +18,7 @@ export function PasswordInput({
       <input
         type={visible ? 'text' : 'password'}
         className={cn(
-          'border-border-strong bg-surface text-foreground aria-[invalid]:border-danger min-h-11 w-full rounded-md border py-2.5 pr-11 pl-3 text-base',
+          'border-border-strong bg-surface text-foreground aria-[invalid]:border-danger aria-[invalid]:ring-danger min-h-11 w-full rounded-md border py-2.5 pr-11 pl-3 text-base aria-[invalid]:ring-1',
           className,
         )}
         {...props}

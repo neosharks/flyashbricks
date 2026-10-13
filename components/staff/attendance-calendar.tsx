@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Field } from '@/components/ui/field';
+import { FormErrors } from '@/components/ui/form-errors';
 import { Input } from '@/components/ui/input';
 import { markAttendanceAction } from '@/features/staff/actions';
+import { AttendanceSheetSchema, foldSheet } from '@/features/staff/schema';
 import type { DayMark } from '@/features/staff/types';
 import { useActionForm } from '@/hooks/use-action-form';
 import { intlLocale } from '@/lib/money';
@@ -45,11 +47,15 @@ export function AttendanceCalendar({
   const [overtime, setOvertime] = useState('');
   const [bricks, setBricks] = useState('');
 
-  const form = useActionForm(markAttendanceAction, () => {
-    toast.success(t('payment.saved'));
-    setEditing(null);
-    router.refresh();
-  });
+  const form = useActionForm(
+    markAttendanceAction,
+    () => {
+      toast.success(t('payment.saved'));
+      setEditing(null);
+      router.refresh();
+    },
+    { schema: AttendanceSheetSchema, prepare: foldSheet, translate: translateError },
+  );
 
   const [year, monthNumber] = month.split('-').map(Number);
   const first = new Date(Date.UTC(year ?? 1970, (monthNumber ?? 1) - 1, 1));
@@ -123,10 +129,15 @@ export function AttendanceCalendar({
           }
           description={t('day.description')}
         >
-          <form method="post" onSubmit={form.onSubmit} className="flex flex-col gap-4" noValidate>
-            {form.formError && (
-              <Alert tone="danger">{translateError(form.error('date')) ?? form.formError}</Alert>
-            )}
+          <form
+            method="post"
+            onSubmit={form.onSubmit}
+            onChange={form.onChange}
+            onBlur={form.onBlur}
+            className="flex flex-col gap-4"
+            noValidate
+          >
+            <FormErrors form={form} />
             <input type="hidden" name="date" value={editing ?? ''} />
             <input type="hidden" name={`att.${staffId}.status`} value={status} />
             <input
@@ -176,25 +187,38 @@ export function AttendanceCalendar({
 
             {status !== 'none' && (
               <div className="flex flex-wrap gap-3">
-                <label className="flex flex-col gap-1 text-sm">
-                  {t('sheet.overtimeHours')}
-                  <Input
-                    value={overtime}
-                    inputMode="decimal"
-                    onChange={(event) => setOvertime(event.target.value)}
-                    className="w-32"
-                  />
-                </label>
-                {wageType === 'per_thousand_bricks' && (
-                  <label className="flex flex-col gap-1 text-sm">
-                    {t('sheet.bricks')}
+                {/* One person, so always the first entry the sheet posts. */}
+                <Field
+                  label={t('sheet.overtimeHours')}
+                  error={form.error('entries.0.overtimeHours')}
+                  className="w-40"
+                >
+                  {(props) => (
                     <Input
-                      value={bricks}
-                      inputMode="numeric"
-                      onChange={(event) => setBricks(event.target.value)}
-                      className="w-32"
+                      {...props}
+                      data-error-key="entries.0.overtimeHours"
+                      value={overtime}
+                      inputMode="decimal"
+                      onChange={(event) => setOvertime(event.target.value)}
                     />
-                  </label>
+                  )}
+                </Field>
+                {wageType === 'per_thousand_bricks' && (
+                  <Field
+                    label={t('sheet.bricks')}
+                    error={form.error('entries.0.bricks')}
+                    className="w-40"
+                  >
+                    {(props) => (
+                      <Input
+                        {...props}
+                        data-error-key="entries.0.bricks"
+                        value={bricks}
+                        inputMode="numeric"
+                        onChange={(event) => setBricks(event.target.value)}
+                      />
+                    )}
+                  </Field>
                 )}
               </div>
             )}
