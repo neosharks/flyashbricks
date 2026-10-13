@@ -90,6 +90,10 @@ Work through this before real data goes in, and again after moving servers.
     your real address.
 11. **Updates** — merge Dependabot PRs regularly; rebuild with `docker compose ... up -d
 --build --pull always` monthly so base images pick up security fixes.
+    The in-app Updates page never gives the app Docker access: it only writes a request file
+    that the host's updater (deploy/proxmox/setup.sh) accepts for the newest `vX.Y.Z` tag of
+    the repository. Anyone who can push tags to the repository can therefore ship code to
+    every server that updates — protect tags on GitHub to the maintainers.
 
 ## Behind Cloudflare or a load balancer
 

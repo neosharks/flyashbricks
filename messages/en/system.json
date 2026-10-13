@@ -1,0 +1,41 @@
+{
+  "title": "Updates",
+  "description": "Install new versions of the app from here. Your data is kept as it is.",
+  "current": {
+    "label": "Running now",
+    "hint": "The version installed on this server"
+  },
+  "latest": {
+    "label": "Newest version",
+    "upToDate": "You are up to date",
+    "available": "A new version is ready to install",
+    "published": "Released on {date}",
+    "unknown": "Could not check",
+    "unknownHint": "GitHub could not be reached. Try again later."
+  },
+  "notes": {
+    "title": "What is new in {version}",
+    "viewOnGithub": "Full details on GitHub"
+  },
+  "update": {
+    "button": "Update to {version}",
+    "confirmTitle": "Update to {version}?",
+    "confirmBody": "The app is rebuilt and restarted on this server. This takes about 5 minutes, and the app is unavailable for less than a minute at the end. Taking a backup first is a good idea.",
+    "confirm": "Start the update",
+    "started": "Update started"
+  },
+  "status": {
+    "pending": "Waiting for the server to start the update…",
+    "running": "Updating to {version}… You can keep this page open to follow along.",
+    "restarting": "The app is restarting with the new version…",
+    "succeeded": "Updated to {version}",
+    "reload": "Reload the app",
+    "failed": "The update to {version} did not finish",
+    "failedBody": "Nothing was lost. The technical details below show where it stopped; share them with whoever looks after this server.",
+    "log": "Technical details"
+  },
+  "unavailable": {
+    "title": "Updates from the app are not set up on this server",
+    "body": "Run this once on the server (inside the Proxmox container) to turn them on:"
+  }
+}

@@ -119,15 +119,37 @@ first admin — printing the temporary password once at the end.
   first; Caddy then gets a Let's Encrypt certificate.
 - The host CPU needs AVX (MongoDB 8 requires it).
 
-Update to the latest version (pull, rebuild, migrate, restart):
+### Updates
+
+Versions are git tags (`v0.2.0`, `v0.3.0`, …), each published as a GitHub release. An admin
+opens **Administration → Updates** in the app, reads what is new, and presses **Update**. The
+app is rebuilt and restarted on the server in about five minutes, and the page follows along.
+Only the newest release can be installed this way, never an older one.
+
+The app itself cannot touch Docker. It leaves a request in `/opt/flyashbricks/.updater`; a
+systemd unit installed by the setup script checks it against the repository's tags and runs
+the update as root. The same update from the Proxmox host:
 
 ```bash
-pct exec <container id> -- flyashbricks update
+pct exec <container id> -- flyashbricks update            # newest release
+pct exec <container id> -- flyashbricks update v0.3.0     # a specific one
 ```
 
+Servers installed before the Updates page existed get it by running the new installer once
+inside the container (secrets and data are kept):
+
+```bash
+cd /opt/flyashbricks && git pull && bash deploy/proxmox/setup.sh install
+```
+
+**Publishing a release:** set `version` in `package.json`, push to `main`, and once CI is
+green tag that commit: `git tag v0.3.0 && git push origin v0.3.0`. The release workflow checks
+the tag matches `package.json` and publishes the release with the commit subjects as its notes,
+which is what admins see before updating.
+
 Settings live in `/opt/flyashbricks/.env.production` inside the container; edit, then run
-the update. Not on Proxmox? `deploy/proxmox/setup.sh install` does the same on any Debian or
-Ubuntu server, run as root.
+`flyashbricks update`. Not on Proxmox? `deploy/proxmox/setup.sh install` does the same on any
+Debian or Ubuntu server, run as root.
 
 ---
 

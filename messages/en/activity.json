@@ -84,6 +84,9 @@
       "create": "Recorded a staff payment",
       "void": "Cancelled a staff payment",
       "export": "Downloaded wages as CSV"
+    },
+    "system": {
+      "update": "Started an app update"
     }
   },
   "person": {

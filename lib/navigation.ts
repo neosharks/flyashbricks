@@ -13,7 +13,8 @@ export type NavIcon =
   | 'settings'
   | 'notifications'
   | 'staff'
-  | 'attendance';
+  | 'attendance'
+  | 'updates';
 
 export type NavItem = {
   href: string;
@@ -84,6 +85,13 @@ const ALL: (NavItem & { requires: Action | null })[] = [
     icon: 'settings',
     group: 'admin',
     requires: 'settings:manage',
+  },
+  {
+    href: '/updates',
+    label: 'updates',
+    icon: 'updates',
+    group: 'admin',
+    requires: 'system:update',
   },
 ];
 

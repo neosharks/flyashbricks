@@ -7,7 +7,13 @@
 #
 # After the first install it is linked to /usr/local/bin/flyashbricks:
 #
-#   flyashbricks update      # pull, rebuild, migrate, restart
+#   flyashbricks update            # newest release: fetch, rebuild, migrate, restart
+#   flyashbricks update v0.3.0     # a specific release
+#
+# Releases are git tags vMAJOR.MINOR.PATCH; with none published yet, update
+# follows BRANCH. Admins can also start an update from the app's Updates page:
+# the app drops a request into $INSTALL_DIR/.updater, and a systemd path unit
+# installed here runs `apply-request`, which only ever installs the newest tag.
 #
 # Settings come from the environment, or from /root/flyashbricks-install.env
 # when install.sh pushed one:
@@ -27,6 +33,8 @@ REPO_URL=${REPO_URL:-https://github.com/neosharks/flyashbricks.git}
 BRANCH=${BRANCH:-main}
 INSTALL_DIR=${INSTALL_DIR:-/opt/flyashbricks}
 ANSWERS_FILE=${ANSWERS_FILE:-/root/flyashbricks-install.env}
+UPDATER_DIR=$INSTALL_DIR/.updater
+RELEASE_TAG='^v[0-9]+\.[0-9]+\.[0-9]+$'
 
 log() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
 die() {
@@ -34,8 +42,12 @@ die() {
   exit 1
 }
 
+app_version() {
+  git -C "$INSTALL_DIR" describe --tags --always 2>/dev/null || echo dev
+}
+
 compose() {
-  docker compose -f "$INSTALL_DIR/docker-compose.prod.yml" \
+  APP_VERSION=$(app_version) docker compose -f "$INSTALL_DIR/docker-compose.prod.yml" \
     --env-file "$INSTALL_DIR/.env.production" --project-directory "$INSTALL_DIR" "$@"
 }
 
@@ -55,16 +67,25 @@ install_packages() {
   systemctl enable --now docker >/dev/null 2>&1 || true
 }
 
+latest_tag() {
+  git -C "$INSTALL_DIR" tag -l 'v*' --sort=-v:refname | grep -E "$RELEASE_TAG" | head -n1 || true
+}
+
+# Checks out $1, or the newest release, or the tip of BRANCH when nothing has
+# been released yet. Detached, so local commits can never get in the way.
 fetch_source() {
+  local target=${1:-}
   if [[ -d "$INSTALL_DIR/.git" ]]; then
-    log "Updating source in $INSTALL_DIR"
-    git -C "$INSTALL_DIR" fetch --quiet origin "$BRANCH"
-    git -C "$INSTALL_DIR" checkout --quiet "$BRANCH"
-    git -C "$INSTALL_DIR" merge --quiet --ff-only "origin/$BRANCH"
+    log "Fetching releases into $INSTALL_DIR"
+    git -C "$INSTALL_DIR" fetch --quiet --tags --force origin
   else
     log "Cloning $REPO_URL into $INSTALL_DIR"
     git clone --quiet --branch "$BRANCH" "$REPO_URL" "$INSTALL_DIR"
   fi
+  [[ -n "$target" ]] || target=$(latest_tag)
+  [[ -n "$target" ]] || target=origin/$BRANCH
+  log "Checking out $target"
+  git -C "$INSTALL_DIR" checkout --quiet --detach "$target"
 }
 
 # Writes $1 with fresh secrets. Hex for anything that goes inside a connection
@@ -154,6 +175,53 @@ create_org() {
   touch "$marker"
 }
 
+# The shared folder and systemd units behind the app's Updates page.
+install_updater() {
+  install -d -m 0755 -o 1001 -g 1001 "$UPDATER_DIR"
+  printf '{"installed":true}\n' >"$UPDATER_DIR/agent.json"
+  chmod 644 "$UPDATER_DIR/agent.json"
+  cat >/etc/systemd/system/flyashbricks-updater.path <<EOF
+[Unit]
+Description=Watch for update requests from Fly Ash Bricks
+
+[Path]
+PathExists=$UPDATER_DIR/request.json
+Unit=flyashbricks-updater.service
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  cat >/etc/systemd/system/flyashbricks-updater.service <<EOF
+[Unit]
+Description=Install the Fly Ash Bricks release requested from the app
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=$INSTALL_DIR/deploy/proxmox/setup.sh apply-request
+EOF
+  systemctl daemon-reload
+  systemctl enable --now flyashbricks-updater.path >/dev/null 2>&1
+}
+
+# write_status STATE VERSION FROM STARTED [FINISHED] — read by the app, so
+# written whole with a rename. Every value is a tag, `git describe` output or
+# a date, none of which needs JSON escaping.
+write_status() {
+  local finished=null
+  [[ -n "${5:-}" ]] && finished="\"$5\""
+  printf '{"state":"%s","version":"%s","from":"%s","startedAt":"%s","finishedAt":%s}\n' \
+    "$1" "$2" "$3" "$4" "$finished" >"$UPDATER_DIR/.status.json.tmp"
+  chmod 644 "$UPDATER_DIR/.status.json.tmp"
+  mv -f "$UPDATER_DIR/.status.json.tmp" "$UPDATER_DIR/status.json"
+}
+
+# Version from the app's request file, or nothing. The app writes the version
+# first; anything else in the file is ignored.
+requested_version() {
+  sed -n 's/^{"version":"\(v[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}\)".*/\1/p' "$1" | head -n1
+}
+
 link_command() {
   ln -sf "$INSTALL_DIR/deploy/proxmox/setup.sh" /usr/local/bin/flyashbricks
 }
@@ -165,7 +233,7 @@ print_summary() {
 
 Fly Ash Bricks is running at https://$domain
 
-  Update later:   flyashbricks update
+  Update later:   the app's Updates page, or: flyashbricks update
   Settings:       $INSTALL_DIR/.env.production  (then: flyashbricks update)
   Logs:           cd $INSTALL_DIR && docker compose -f docker-compose.prod.yml --env-file .env.production logs -f app
 EOF
@@ -189,6 +257,7 @@ cmd_install() {
   install_packages
   fetch_source
   prepare_config
+  install_updater
   start_stack
   create_org
   link_command
@@ -197,20 +266,64 @@ cmd_install() {
 }
 
 cmd_update() {
+  local target=${1:-}
   [[ $EUID -eq 0 ]] || die 'Run as root.'
   [[ -f "$INSTALL_DIR/.env.production" ]] || die "No install found in $INSTALL_DIR; run install first."
-  fetch_source
+  [[ -z "$target" || "$target" =~ $RELEASE_TAG ]] || die "Not a release version: $target"
+  # Held until the update ends, through the exec below.
+  exec 9>/run/flyashbricks-update.lock
+  flock -n 9 || die 'Another update is already running.'
+  fetch_source "$target"
+  # Carry on with the script as it is in the version just checked out, so a
+  # release can change its own update steps.
+  exec bash "$INSTALL_DIR/deploy/proxmox/setup.sh" finish-update
+}
+
+cmd_finish_update() {
+  install_updater
+  link_command
   start_stack
   log 'Removing unused images'
   docker image prune -f >/dev/null
   print_summary
 }
 
+# Run by flyashbricks-updater.service when the app leaves a request.
+cmd_apply_request() {
+  local request=$UPDATER_DIR/request.json log=$UPDATER_DIR/update.log
+  local version from started latest
+  [[ -f "$request" ]] || return 0
+  version=$(requested_version "$request")
+  rm -f "$request"
+  from=$(app_version)
+  started=$(date -Iseconds)
+  : >"$log"
+  chmod 644 "$log"
+
+  git -C "$INSTALL_DIR" fetch --quiet --tags --force origin >>"$log" 2>&1 || true
+  latest=$(latest_tag)
+  if [[ -z "$version" || "$version" != "$latest" ]]; then
+    echo "Refused: only the newest release (${latest:-none}) can be installed from the app." >>"$log"
+    write_status failed "${version:-unknown}" "$from" "$started" "$(date -Iseconds)"
+    return 1
+  fi
+
+  write_status running "$version" "$from" "$started"
+  if "$INSTALL_DIR/deploy/proxmox/setup.sh" update "$version" >>"$log" 2>&1; then
+    write_status succeeded "$version" "$from" "$started" "$(date -Iseconds)"
+  else
+    write_status failed "$version" "$from" "$started" "$(date -Iseconds)"
+    return 1
+  fi
+}
+
 main() {
   case "${1:-}" in
     install) cmd_install ;;
-    update) cmd_update ;;
-    *) die "Usage: $(basename "$0") install|update" ;;
+    update) cmd_update "${2:-}" ;;
+    finish-update) cmd_finish_update ;;
+    apply-request) cmd_apply_request ;;
+    *) die "Usage: $(basename "$0") install | update [vX.Y.Z]" ;;
   esac
 }
 

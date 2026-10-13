@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -15,6 +15,14 @@ function writeEnv(file: string, env: Record<string, string> = {}): void {
     ['-c', `source "${SETUP}"; primary_ip() { echo 192.168.1.50; }; write_env "$0"`, file],
     { env: { ...process.env, APP_DOMAIN: '', MAIL_FROM: '', SMTP_URL: '', ...env } },
   );
+}
+
+/** Sources setup.sh for an install in `installDir` and runs `script`, returning its output. */
+function runSetup(installDir: string, script: string): string {
+  return execFileSync('bash', ['-c', `source "${SETUP}"; ${script}`], {
+    env: { ...process.env, INSTALL_DIR: installDir },
+    encoding: 'utf8',
+  });
 }
 
 function parse(text: string): Record<string, string> {
@@ -87,5 +95,54 @@ describe('Proxmox install scripts', () => {
     ];
     expect(new Set(secrets).size).toBe(secrets.length);
     expect((await stat(file)).mode & 0o777).toBe(0o600);
+  });
+
+  describe('updater', () => {
+    it('takes the version only from the start of the request file', async () => {
+      const request = path.join(dir, 'request.json');
+      const read = async (content: string) => {
+        await writeFile(request, content);
+        return runSetup(dir, `requested_version "${request}"`).trim();
+      };
+
+      expect(await read('{"version":"v0.3.0","requestedBy":"Asha"}')).toBe('v0.3.0');
+      expect(await read('{"requestedBy":"x","version":"v9.9.9"}')).toBe('');
+      expect(await read('{"version":"main; reboot"}')).toBe('');
+      expect(await read('{"version":"v1.2.3$(reboot)"}')).toBe('');
+    });
+
+    it('writes a status file the app can parse', async () => {
+      await mkdir(path.join(dir, '.updater'));
+      runSetup(dir, 'write_status running v0.3.0 v0.2.0 2026-10-13T10:00:00+05:30');
+      const file = path.join(dir, '.updater', 'status.json');
+      expect(JSON.parse(await readFile(file, 'utf8'))).toEqual({
+        state: 'running',
+        version: 'v0.3.0',
+        from: 'v0.2.0',
+        startedAt: '2026-10-13T10:00:00+05:30',
+        finishedAt: null,
+      });
+
+      runSetup(dir, 'write_status succeeded v0.3.0 v0.2.0 2026-10-13T10:00:00+05:30 done-at');
+      expect(JSON.parse(await readFile(file, 'utf8'))).toMatchObject({
+        state: 'succeeded',
+        finishedAt: 'done-at',
+      });
+    });
+
+    it('picks the newest plain release tag', () => {
+      const git = (...args: string[]) =>
+        execFileSync('git', ['-C', dir, '-c', 'user.name=t', '-c', 'user.email=t@t', ...args]);
+      git('init', '-q');
+      git('commit', '-q', '--allow-empty', '-m', 'one');
+      for (const tag of ['v0.9.0', 'v0.10.0', 'v1.0.0-rc1', 'nightly']) git('tag', tag);
+
+      expect(runSetup(dir, 'latest_tag').trim()).toBe('v0.10.0');
+    });
+
+    it('finds no release in a repository without tags', () => {
+      execFileSync('git', ['-C', dir, 'init', '-q']);
+      expect(runSetup(dir, 'latest_tag').trim()).toBe('');
+    });
   });
 });

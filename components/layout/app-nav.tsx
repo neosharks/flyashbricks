@@ -16,6 +16,7 @@ import {
   Menu,
   Package,
   ReceiptIndianRupee,
+  RefreshCw,
   Settings,
   UserCog,
   Users,
@@ -38,6 +39,7 @@ const ICONS: Record<NavIcon, typeof Boxes> = {
   notifications: Bell,
   staff: HardHat,
   attendance: CalendarCheck,
+  updates: RefreshCw,
 };
 
 function matches(pathname: string, href: string): boolean {

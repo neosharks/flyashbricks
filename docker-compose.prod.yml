@@ -87,9 +87,17 @@ services:
       WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-none}
       WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-}
       WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-}
+      # Set by deploy/proxmox/setup.sh from `git describe`; shown on the Updates page.
+      APP_VERSION: ${APP_VERSION:-dev}
+      UPDATE_REPO: ${UPDATE_REPO:-neosharks/flyashbricks}
+      UPDATER_DIR: /updater
     volumes:
       - backups:/backups
       - assets:/data/assets
+      # Shared with the host's updater (deploy/proxmox/setup.sh): the app only
+      # drops a request here and reads progress back. Empty, and updates from
+      # the app stay off, on servers set up another way.
+      - ./.updater:/updater
     mem_limit: 1g
     tmpfs: ['/tmp', '/app/.next/cache:uid=1001,gid=1001']
     # frontend: Caddy in, mail and SMS gateways out. backend: database and cache.

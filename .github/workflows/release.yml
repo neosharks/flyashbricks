@@ -1,0 +1,36 @@
+name: Release
+
+# Pushing a tag vX.Y.Z publishes a GitHub release. Servers installed with
+# deploy/proxmox/setup.sh offer the newest release on the app's Updates page,
+# with these notes. Tag a commit on main once its CI run is green.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Check the tag matches package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Notes are the commit subjects since the previous release, which is
+        # what the Updates page shows before an admin installs it.
+        run: |
+          previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          git log --no-merges --pretty='- %s' "${previous:+$previous..}$GITHUB_REF_NAME" > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag

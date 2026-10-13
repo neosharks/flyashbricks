@@ -67,6 +67,23 @@ const ServerEnvSchema = z
      * outside anything the web server serves directly. Files are only ever
      * read back through the app, which checks who is asking.
      */
+    /** The release this server runs (`git describe`), passed in by deploy/proxmox/setup.sh. */
+    APP_VERSION: z.string().min(1).max(64).default('dev'),
+    /** The public GitHub repository whose releases the Updates page offers. */
+    UPDATE_REPO: z
+      .string()
+      .regex(/^[\w.-]+\/[\w.-]+$/)
+      .default('neosharks/flyashbricks'),
+    /**
+     * Folder shared with the updater on the host (deploy/proxmox/setup.sh). The
+     * app only drops a request file there; the host does the update. Unset
+     * turns in-app updates off.
+     */
+    UPDATER_DIR: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(1).optional(),
+    ),
+
     STORAGE_DRIVER: z.enum(['local']).default('local'),
     STORAGE_DIR: z.string().min(1).default('./storage'),
     /** Largest file accepted from a browser, before compression. */

@@ -78,13 +78,15 @@ describe('can', () => {
     expect(can(salesClerk, 'users:read')).toBe(false);
   });
 
-  it('keeps voiding sales, the activity log and backups for admins', () => {
+  it('keeps voiding sales, the activity log, backups and updates for admins', () => {
     expect(can(salesClerk, 'sales:void')).toBe(false);
     expect(can(manager, 'activity:read')).toBe(false);
     expect(can(manager, 'backup:run')).toBe(false);
     expect(can(admin, 'backup:run')).toBe(true);
     expect(can(manager, 'settings:manage')).toBe(false);
     expect(can(admin, 'settings:manage')).toBe(true);
+    expect(can(manager, 'system:update')).toBe(false);
+    expect(can(admin, 'system:update')).toBe(true);
   });
 
   it('stops an employee user-manager from touching an admin account', () => {

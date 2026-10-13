@@ -60,7 +60,8 @@ export type Action =
   | 'users:write'
   | 'activity:read'
   | 'backup:run'
-  | 'settings:manage';
+  | 'settings:manage'
+  | 'system:update';
 
 /** Only the facts an authorization decision may depend on. */
 export type Resource = {
@@ -113,6 +114,9 @@ export function can(user: SessionUser, action: Action, resource?: Resource): boo
       return user.role === 'admin';
     // Company details printed on every invoice, and the GST rate.
     case 'settings:manage':
+      return user.role === 'admin';
+    // Installs a new release of the app for everyone on this server.
+    case 'system:update':
       return user.role === 'admin';
     default:
       return false;

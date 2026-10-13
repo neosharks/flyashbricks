@@ -19,5 +19,10 @@
   "OVERPAYMENT": "This payment is more than the amount due.",
   "INACTIVE": "This item is inactive.",
   "BACKUP_TOO_LARGE": "The backup is too big to email. Please download it instead.",
-  "STORAGE_FULL": "Storage is full. Ask your admin to remove old photos or raise the limit."
+  "STORAGE_FULL": "Storage is full. Ask your admin to remove old photos or raise the limit.",
+  "UPDATER_UNAVAILABLE": "Updates from the app are not set up on this server.",
+  "UPDATE_IN_PROGRESS": "An update is already running. Wait for it to finish.",
+  "UPDATE_CHECK_FAILED": "Could not check for the new version. Please try again in a few minutes.",
+  "UPDATE_VERSION_CHANGED": "A newer version has just been released. Reload the page and try again.",
+  "ALREADY_UP_TO_DATE": "This server already runs the newest version."
 }

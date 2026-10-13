@@ -26,3 +26,7 @@ deploy/mongo-keyfile
 *.fabk
 *.json.gz
 /backup*.json
+
+# Server-side state of deploy/proxmox/setup.sh.
+/.updater
+/.org-created

@@ -21,3 +21,5 @@ deploy/mongo-keyfile
 *.fabk
 *.json.gz
 backup*.json
+.updater
+.org-created
