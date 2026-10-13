@@ -105,6 +105,15 @@ fi
 net="name=eth0,bridge=$CT_BRIDGE,ip=$CT_IP"
 [[ -n "${CT_GW:-}" ]] && net+=",gw=$CT_GW"
 
+# Proxmox gives the container the host's DNS servers. Tailscale's MagicDNS
+# (100.100.100.100) only answers on the tailnet, which the container is not
+# on, so use public resolvers then. CT_DNS overrides either way.
+if [[ -z "${CT_DNS:-}" ]] && grep -qE '^nameserver (100\.100\.100\.100|fd7a:115c:a1e0::53)' /etc/resolv.conf; then
+  CT_DNS='1.1.1.1 8.8.8.8'
+fi
+dns=()
+[[ -n "${CT_DNS:-}" ]] && dns=(--nameserver "$CT_DNS" --searchdomain local)
+
 log "Creating container $CTID ($CT_HOSTNAME)"
 # Unprivileged; nesting lets systemd in Ubuntu 24.04 run its services normally.
 pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
@@ -113,7 +122,7 @@ pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
   --memory "$CT_RAM" \
   --swap 512 \
   --rootfs "$CT_STORAGE:$CT_DISK" \
-  --net0 "$net" \
+  --net0 "$net" "${dns[@]}" \
   --ostype ubuntu \
   --unprivileged 1 \
   --features nesting=1 \
@@ -122,13 +131,18 @@ pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
   --description "Fly Ash Bricks — update with: pct exec $CTID -- flyashbricks update" >/dev/null
 pct start "$CTID"
 
+# A name lookup with no reachable DNS server can hang; bound every try.
+resolves() { pct exec "$CTID" -- timeout 5 getent hosts github.com >/dev/null 2>&1; }
 log 'Waiting for the network'
-for _ in $(seq 1 60); do
-  pct exec "$CTID" -- getent hosts github.com >/dev/null 2>&1 && break
+for _ in $(seq 1 24); do
+  resolves && break
   sleep 2
 done
-pct exec "$CTID" -- getent hosts github.com >/dev/null 2>&1 ||
-  die "Container $CTID has no internet access; check the bridge, IP and gateway."
+if ! resolves; then
+  pct exec "$CTID" -- ping -c 1 -W 3 1.1.1.1 >/dev/null 2>&1 ||
+    die "Container $CTID cannot reach the internet; check the bridge, IP and gateway."
+  die "Container $CTID is online but cannot look up names. Set DNS servers, e.g. CT_DNS='1.1.1.1 8.8.8.8', and run this again."
+fi
 
 workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
