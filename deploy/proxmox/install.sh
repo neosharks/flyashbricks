@@ -4,15 +4,16 @@
 #
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/neosharks/flyashbricks/main/deploy/proxmox/install.sh)"
 #
-# Asks a few questions (Enter keeps the default), creates an unprivileged
-# Debian container with Docker, and runs deploy/proxmox/setup.sh inside it.
+# Asks a few questions (Enter keeps the default), creates a small unprivileged
+# Ubuntu 24.04 container, and runs deploy/proxmox/setup.sh inside it: Node.js
+# and MongoDB as system services plus the newest ready-built release — no
+# Docker. The app is meant to be reached through a Cloudflare Tunnel.
 # Every question can be answered ahead of time with an environment variable
-# of the same name, e.g. `CTID=120 CT_IP=192.168.1.50/24 CT_GW=192.168.1.1 bash -c ...`.
+# of the same name, e.g. `CTID=120 APP_URL=https://bricks.example.com bash -c ...`.
 set -euo pipefail
 
-REPO_URL=${REPO_URL:-https://github.com/neosharks/flyashbricks.git}
-BRANCH=${BRANCH:-main}
-RAW_BASE=${RAW_BASE:-https://raw.githubusercontent.com/neosharks/flyashbricks/$BRANCH}
+REPO=${REPO:-neosharks/flyashbricks}
+RAW_BASE=${RAW_BASE:-https://raw.githubusercontent.com/$REPO/main}
 
 log() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
 die() {
@@ -44,14 +45,17 @@ first_storage() {
   fi
 }
 
+# MongoDB publishes server packages for Ubuntu 24.04 on both architectures.
 latest_template() {
   pveam available --section system | awk '{print $2}' |
-    grep -E '^debian-1[23]-standard_.*_amd64\.tar\.zst$' | sort -V | tail -n1
+    grep -E '^ubuntu-24\.04-standard_.*\.tar\.zst$' | sort -V | tail -n1
 }
 
 [[ $EUID -eq 0 ]] || die 'Run as root on the Proxmox host.'
 command -v pct >/dev/null 2>&1 || die 'pct not found: run this on a Proxmox VE host, not inside a VM or container.'
-grep -qw avx /proc/cpuinfo || die 'This CPU has no AVX, which MongoDB 8 requires.'
+if [[ "$(uname -m)" == x86_64 ]]; then
+  grep -qw avx /proc/cpuinfo || die 'This CPU has no AVX, which MongoDB 8 requires.'
+fi
 
 echo
 echo 'Fly Ash Bricks — Proxmox installer'
@@ -60,8 +64,8 @@ echo 'Container'
 ask CTID '  Container ID' "$(pvesh get /cluster/nextid)"
 ask CT_HOSTNAME '  Hostname' flyashbricks
 ask CT_CORES '  CPU cores' 2
-ask CT_RAM '  Memory (MB)' 4096
-ask CT_DISK '  Disk (GB)' 20
+ask CT_RAM '  Memory (MB)' 1536
+ask CT_DISK '  Disk (GB)' 8
 ask CT_STORAGE '  Disk storage' "$(first_storage rootdir local-lvm)"
 ask CT_BRIDGE '  Network bridge' vmbr0
 ask CT_IP '  IPv4 address, CIDR (e.g. 192.168.1.50/24) or dhcp' dhcp
@@ -70,10 +74,10 @@ if [[ "$CT_IP" != dhcp ]]; then
 fi
 echo
 echo 'App'
-echo '  Domain: leave empty to use the container IP on your LAN (browsers will'
-echo '  warn until you trust its certificate). A real domain must already point'
-echo '  at this network with ports 80/443 forwarded to the container.'
-ask APP_DOMAIN '  Domain' ''
+echo '  Public address: the https:// hostname your Cloudflare Tunnel will serve,'
+echo '  e.g. https://bricks.example.com. Point the tunnel at http://<container IP>:3000.'
+ask APP_URL '  Public address' ''
+[[ "$APP_URL" =~ ^https:// ]] || die 'The public address must start with https://.'
 ask ORG_NAME '  Company name (empty to skip)' ''
 if [[ -n "$ORG_NAME" ]]; then
   ask ADMIN_NAME '  Owner name' ''
@@ -92,7 +96,7 @@ TEMPLATE_STORAGE=${TEMPLATE_STORAGE:-$(first_storage vztmpl local)}
 log 'Updating the template list'
 pveam update >/dev/null
 TEMPLATE=$(latest_template)
-[[ -n "$TEMPLATE" ]] || die 'No Debian 12/13 template is available.'
+[[ -n "$TEMPLATE" ]] || die 'No Ubuntu 24.04 template is available.'
 if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$TEMPLATE"; then
   log "Downloading $TEMPLATE"
   pveam download "$TEMPLATE_STORAGE" "$TEMPLATE" >/dev/null
@@ -102,17 +106,17 @@ net="name=eth0,bridge=$CT_BRIDGE,ip=$CT_IP"
 [[ -n "${CT_GW:-}" ]] && net+=",gw=$CT_GW"
 
 log "Creating container $CTID ($CT_HOSTNAME)"
-# Unprivileged, with nesting and keyctl so Docker can run inside it.
+# Unprivileged; nesting lets systemd in Ubuntu 24.04 run its services normally.
 pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
   --hostname "$CT_HOSTNAME" \
   --cores "$CT_CORES" \
   --memory "$CT_RAM" \
-  --swap 2048 \
+  --swap 512 \
   --rootfs "$CT_STORAGE:$CT_DISK" \
   --net0 "$net" \
-  --ostype debian \
+  --ostype ubuntu \
   --unprivileged 1 \
-  --features nesting=1,keyctl=1 \
+  --features nesting=1 \
   --onboot 1 \
   --tags flyashbricks \
   --description "Fly Ash Bricks — update with: pct exec $CTID -- flyashbricks update" >/dev/null
@@ -130,7 +134,7 @@ workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
 curl -fsSL "$RAW_BASE/deploy/proxmox/setup.sh" -o "$workdir/setup.sh"
 # %q quotes each value so names with spaces survive being sourced.
-for var in REPO_URL BRANCH APP_DOMAIN ORG_NAME ADMIN_NAME ADMIN_PHONE ADMIN_EMAIL; do
+for var in REPO APP_URL ORG_NAME ADMIN_NAME ADMIN_PHONE ADMIN_EMAIL; do
   printf '%s=%q\n' "$var" "${!var:-}"
 done >"$workdir/answers.env"
 pct push "$CTID" "$workdir/answers.env" /root/flyashbricks-install.env --perms 600

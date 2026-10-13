@@ -29,6 +29,16 @@ export function clientIp(
   return trimmed === undefined || trimmed === '' ? null : trimmed;
 }
 
+/**
+ * Cloudflare sets CF-Connecting-IP to the visitor's address, overwriting
+ * anything the visitor sent, so behind a Cloudflare Tunnel it is the one
+ * header to read. The tunnel connector must then be the only way in.
+ */
+export function cloudflareIp(value: string | null): string | null {
+  const trimmed = value?.trim();
+  return trimmed === undefined || trimmed === '' ? null : trimmed;
+}
+
 /** Validated in production; under SKIP_ENV_VALIDATION (build, tests) the raw string, if any. */
 function trustedHops(): number {
   const hops = Number((env.TRUSTED_PROXY_HOPS as number | string | undefined) ?? 1);
@@ -38,14 +48,17 @@ function trustedHops(): number {
 /**
  * Client address and agent for audit and login records.
  *
- * Behind the deployment's Caddy, which overwrites X-Forwarded-For with the
- * address it sees, `TRUSTED_PROXY_HOPS=1` (the default) is right. See
- * docs/security.md for running behind Cloudflare or a load balancer.
+ * `CLIENT_IP_HEADER=cf-connecting-ip` behind a Cloudflare Tunnel (what
+ * deploy/proxmox/setup.sh sets up); otherwise X-Forwarded-For, counting
+ * `TRUSTED_PROXY_HOPS` proxies from the right. See docs/security.md.
  */
 export async function requestInfo(): Promise<{ ip: string | null; userAgent: string | null }> {
   try {
     const list = await headers();
-    const ip = clientIp(list.get('x-forwarded-for'), list.get('x-real-ip'), trustedHops());
+    const ip =
+      env.CLIENT_IP_HEADER === 'cf-connecting-ip'
+        ? cloudflareIp(list.get('cf-connecting-ip'))
+        : clientIp(list.get('x-forwarded-for'), list.get('x-real-ip'), trustedHops());
     return {
       ip: ip?.slice(0, 64) ?? null,
       userAgent: list.get('user-agent')?.slice(0, 300) ?? null,

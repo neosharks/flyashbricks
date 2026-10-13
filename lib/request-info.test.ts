@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { clientIp } from './request-info';
+import { clientIp, cloudflareIp } from './request-info';
 
 describe('clientIp', () => {
   it('takes the address the one trusted proxy saw', () => {
@@ -13,7 +13,7 @@ describe('clientIp', () => {
   });
 
   it('counts back one entry per trusted proxy', () => {
-    // client-supplied, real client (added by Cloudflare), Cloudflare (added by Caddy)
+    // client-supplied, real client (added by Cloudflare), Cloudflare (added by the next proxy)
     expect(clientIp('1.1.1.1, 203.0.113.7, 172.70.1.1', null, 2)).toBe('203.0.113.7');
   });
 
@@ -30,5 +30,16 @@ describe('clientIp', () => {
     expect(clientIp(null, '198.51.100.1', 1)).toBe('198.51.100.1');
     expect(clientIp(null, null, 1)).toBeNull();
     expect(clientIp('203.0.113.7', '198.51.100.1', 1)).toBe('203.0.113.7');
+  });
+});
+
+describe('cloudflareIp', () => {
+  it('takes the address Cloudflare wrote, whatever X-Forwarded-For says', () => {
+    expect(cloudflareIp(' 203.0.113.7 ')).toBe('203.0.113.7');
+  });
+
+  it('records no address when the header is missing', () => {
+    expect(cloudflareIp(null)).toBeNull();
+    expect(cloudflareIp('  ')).toBeNull();
   });
 });

@@ -17,7 +17,7 @@ export default defineConfig({
       NODE_ENV: 'test',
       SKIP_ENV_VALIDATION: 'true',
       LOG_LEVEL: 'silent',
-      NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+      APP_URL: 'http://localhost:3000',
       NEXT_PUBLIC_APP_NAME: 'Fly Ash Bricks',
       MONGOMS_VERSION: '8.2.1',
     },

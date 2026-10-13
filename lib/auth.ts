@@ -52,7 +52,7 @@ const config: NextAuthConfig = {
   // changes stay immediate because the session callback re-reads the user on
   // every request — see docs/adr/0002-authentication.md.
   session: { strategy: 'jwt', maxAge: 60 * 60 * 24 * 14, updateAge: 60 * 60 },
-  // Only behind a proxy that sets the Host header (Caddy); AUTH_URL pins it otherwise.
+  // Only behind a proxy that sets the Host header (the tunnel); AUTH_URL pins it otherwise.
   trustHost: env.AUTH_TRUST_HOST,
   pages: { signIn: '/login', error: '/login' },
   cookies: {

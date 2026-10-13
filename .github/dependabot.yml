@@ -20,11 +20,3 @@ updates:
     groups:
       actions:
         patterns: ['*']
-
-  - package-ecosystem: docker
-    directories: [/, /deploy]
-    schedule: { interval: monthly }
-
-  - package-ecosystem: docker-compose
-    directory: /
-    schedule: { interval: monthly }

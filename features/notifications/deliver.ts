@@ -22,7 +22,7 @@ function escapeHtml(value: string): string {
 
 /** The link in every email and text: opens the record after sign-in, and marks it read. */
 export function notificationLink(id: string): string {
-  return `${publicEnv.NEXT_PUBLIC_APP_URL}/n/${id}`;
+  return `${publicEnv.APP_URL}/n/${id}`;
 }
 
 async function translatorFor(locale: 'en' | 'hi') {

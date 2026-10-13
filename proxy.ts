@@ -17,7 +17,7 @@ const PUBLIC_PATHS = [
 /** Both spellings: the `__Secure-` prefix depends on whether the app URL is https. */
 const SESSION_COOKIES = ['__Secure-flyash.session', 'flyash.session'];
 
-const isHttps = (process.env.NEXT_PUBLIC_APP_URL ?? '').startsWith('https://');
+const isHttps = (process.env.APP_URL ?? '').startsWith('https://');
 
 /**
  * One Content-Security-Policy for the whole app.

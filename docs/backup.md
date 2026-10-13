@@ -66,9 +66,8 @@ Configure in the server's environment:
 
 With no passphrase, or with neither a folder nor an address, the job does nothing.
 
-With `docker-compose.prod.yml` the `scheduler` container already calls it at 02:30 IST over the
-private network. Caddy answers `404` for every `/api/cron/*` path from the internet, so on any
-other setup call it from the same machine or private network, e.g. from cron on the host:
+On a server set up with `deploy/proxmox/setup.sh`, the `flyashbricks-backup.timer` calls it
+at 02:30 IST on `127.0.0.1`. On any other setup call it from the same machine, e.g. from cron:
 
 ```
 15 2 * * *  curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://127.0.0.1:3000/api/cron/backup
@@ -83,7 +82,8 @@ its own password.
 ## Reading a backup
 
 ```
-pnpm backup:decrypt fly-ash-bricks-shree-bricks-2026-10-12.fabk --out backup.json
+pnpm backup:decrypt fly-ash-bricks-shree-bricks-2026-10-12.fabk --out backup.json   # development
+flyashbricks run backup-decrypt <file> --out <file>.json                         # on a server
 ```
 
 The password is taken from `BACKUP_PASSPHRASE` or asked for without echo. The output is written
@@ -91,11 +91,16 @@ with `0600` permissions — it contains everything, so delete it when done.
 
 ## Restoring
 
+On a server, as root (the file must be readable by the `flyashbricks` user, e.g. in
+`/var/lib/flyashbricks/backups`; indexes already exist after an install):
+
 ```
-pnpm db:migrate                                  # on a fresh database, so indexes exist
-pnpm backup:restore <file>                       # only if the organisation is not there
-pnpm backup:restore <file> --replace --yes       # wipe that organisation, then restore
+flyashbricks run backup-restore <file>                   # only if the organisation is not there
+flyashbricks run backup-restore <file> --replace --yes   # wipe that organisation, then restore
 ```
+
+In development the same with `pnpm db:migrate` first on a fresh database, then
+`pnpm backup:restore <file>`.
 
 Before writing anything, the restore checks that every record — and every counter — belongs
 to the organisation the file is for, and refuses the whole file otherwise; a file stitched
@@ -119,7 +124,7 @@ touched.
 
 A backup holds every database record, including the list of uploaded photos,
 but not the image files themselves — they live in the storage folder
-(`STORAGE_DIR`, the `assets` Docker volume in production). Back that folder up
-alongside the database backups, for example with a nightly `rsync` or volume
-snapshot. If it is lost, everything else still restores; people simply show
+(`STORAGE_DIR`, `/var/lib/flyashbricks/assets` in production). Back that folder
+up alongside the database backups, for example with a nightly `rsync` or a
+Proxmox backup of the container. If it is lost, everything else still restores; people simply show
 initials until a new photo is added.

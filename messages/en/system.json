@@ -36,6 +36,6 @@
   },
   "unavailable": {
     "title": "Updates from the app are not set up on this server",
-    "body": "Run this once on the server (inside the Proxmox container) to turn them on:"
+    "body": "This server was not set up with the Fly Ash Bricks installer, so new versions are installed on the server itself. See \"Updates\" in the project's README."
   }
 }

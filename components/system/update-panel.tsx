@@ -57,10 +57,7 @@ export function UpdatePanel({ current, latest, newer, initial }: UpdatePanelProp
   if (!state.available) {
     return (
       <Alert tone="info" title={t('unavailable.title')}>
-        <p>{t('unavailable.body')}</p>
-        <code className="mt-2 block text-xs break-all">
-          bash /opt/flyashbricks/deploy/proxmox/setup.sh install
-        </code>
+        {t('unavailable.body')}
       </Alert>
     );
   }

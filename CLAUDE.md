@@ -17,7 +17,7 @@ next-intl 4 (cookie locale, no URL prefix) · Tailwind 4 · Zod 4 · Vitest 5 ·
 ## Commands
 
 ```
-docker compose up -d        # mongo (rs0) + redis
+docker compose up -d        # dev only: mongo (rs0) + redis; servers run natively (ADR 0010)
 pnpm setup                  # migrate indexes + seed demo data
 pnpm dev
 pnpm validate               # typecheck + lint + format:check + test

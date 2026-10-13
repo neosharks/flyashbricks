@@ -1,4 +1,4 @@
-# 0001 — One Next.js app, self-hosted in Docker
+# 0001 — One Next.js app, self-hosted
 
 **Status:** accepted
 
@@ -15,15 +15,15 @@ One Next.js (App Router) app. Server Components read MongoDB directly; Server
 Actions are the write API; Route Handlers exist only for things that genuinely
 need HTTP (auth callbacks, file downloads, CSV export, scheduled jobs, health).
 
-It ships as a standalone Docker image behind Caddy (automatic HTTPS), with
-MongoDB, Redis and a tiny scheduler container (`docker-compose.prod.yml`).
+It ships as a standalone Next.js build run directly by Node; how it is
+installed is [0010](0010-native-install.md).
 
 ## Consequences
 
-- Moving to AWS/any cloud is a matter of running the same image (ECS, App
-  Runner, a VM) against Atlas and ElastiCache; nothing is Vercel-specific.
+- Moving to AWS/any cloud is a matter of running the same build (a VM, a
+  container platform) against Atlas; nothing is Vercel-specific.
 - Scheduled work (outbox drain, nightly backup) is triggered over HTTP with a
-  shared secret, so it works the same under Docker, systemd timers, or a
+  shared secret, so it works the same under systemd timers or a
   cloud scheduler.
 - If a native mobile app or third-party integration needs a public API later,
   it is added as versioned Route Handlers over the same `features/*` functions.

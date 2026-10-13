@@ -16,8 +16,6 @@ test-results
 blob-report
 .playwright
 
-# Mongo replica-set key; generated per server, never committed.
-deploy/mongo-keyfile
 
 # Uploaded files (STORAGE_DIR); anchored so lib/storage/ stays tracked.
 /storage
@@ -27,6 +25,5 @@ deploy/mongo-keyfile
 *.json.gz
 /backup*.json
 
-# Server-side state of deploy/proxmox/setup.sh.
-/.updater
-/.org-created
+# Release archives from scripts/package-release.sh.
+/dist

@@ -25,7 +25,7 @@ function isSameOrigin(request: Request): boolean {
   const site = request.headers.get('sec-fetch-site');
   if (site) return site === 'same-origin';
   const origin = request.headers.get('origin');
-  return origin !== null && origin === new URL(publicEnv.NEXT_PUBLIC_APP_URL).origin;
+  return origin !== null && origin === new URL(publicEnv.APP_URL).origin;
 }
 
 /** Streams a backup of the caller's organisation as a file download. Admins only. */

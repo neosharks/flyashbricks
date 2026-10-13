@@ -1,17 +1,20 @@
 import { z } from 'zod';
 
 /**
- * Values compiled into the browser bundle. Public by definition — never a secret.
- * Each key is referenced explicitly because Next inlines them statically;
+ * Values that are public by definition — never a secret. Each key is referenced
+ * explicitly because Next inlines `NEXT_PUBLIC_*` statically;
  * `process.env[dynamicKey]` does not work in the browser.
+ *
+ * APP_URL is deliberately not `NEXT_PUBLIC_`: it is read when the server
+ * starts, so one release build serves any domain. Only server code reads it.
  */
 const PublicEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.url(),
+  APP_URL: z.url(),
   NEXT_PUBLIC_APP_NAME: z.string().min(1).max(60).default('Fly Ash Bricks'),
 });
 
 const parsed = PublicEnvSchema.safeParse({
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  APP_URL: process.env.APP_URL,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
 });
 

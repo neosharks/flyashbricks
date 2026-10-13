@@ -10,7 +10,6 @@ useDefault = true
 description = "Example settings, test fixtures and CI-only values"
 paths = [
   '''(^|/)\.env\.example$''',
-  '''^deploy/\.env\.production\.example$''',
   '''\.test\.tsx?$''',
   '''^tests/''',
   '''^e2e/''',

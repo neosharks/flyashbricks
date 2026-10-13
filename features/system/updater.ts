@@ -6,7 +6,7 @@ import { ConflictError } from '@/lib/errors';
 import { RELEASE_TAG } from './version';
 
 /**
- * The app never updates itself: it cannot reach Docker, by design. It writes
+ * The app never updates itself: it runs unprivileged, by design. It writes
  * `request.json` into a folder shared with the host, where a systemd path
  * unit installed by deploy/proxmox/setup.sh picks it up, checks the version
  * against the repository's tags, and runs the update. The host reports back

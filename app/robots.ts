@@ -2,6 +2,9 @@ import type { MetadataRoute } from 'next';
 import { SITE_PAGES, sitePath } from '@/components/marketing/site';
 import { publicEnv } from '@/lib/public-env';
 
+// Built per request: the domain is only known when the server starts.
+export const dynamic = 'force-dynamic';
+
 /**
  * Only the public website is for search engines, along with the assets needed
  * to render it. Everything else is a private business tool behind sign-in; it
@@ -22,7 +25,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/'],
       },
     ],
-    sitemap: new URL('/sitemap.xml', publicEnv.NEXT_PUBLIC_APP_URL).toString(),
-    host: publicEnv.NEXT_PUBLIC_APP_URL,
+    sitemap: new URL('/sitemap.xml', publicEnv.APP_URL).toString(),
+    host: publicEnv.APP_URL,
   };
 }

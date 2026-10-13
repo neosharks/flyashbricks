@@ -9,18 +9,19 @@ businesses: ₹ with lakh/crore grouping, +91 phone numbers, IST days, optional 
 GSTIN validation (Uttar Pradesh by default).
 
 **Stack:** Node 24 · Next.js 16 (App Router) · React 19 · TypeScript 6 · MongoDB 8.2
-(replica set) via Mongoose 9 · Redis · Auth.js v5 · next-intl · Tailwind CSS 4 · Zod 4 ·
+(replica set) via Mongoose 9 · Auth.js v5 · next-intl · Tailwind CSS 4 · Zod 4 ·
 Vitest + Playwright · pnpm 11.
 
 ---
 
 ## Run it locally
 
-Requirements: Node 24, pnpm 11, Docker.
+Requirements: Node 24, pnpm 11, and a MongoDB replica set — `docker-compose.yml` starts one
+(with an optional Redis) for development; servers do not use Docker.
 
 ```bash
 cp .env.example .env          # defaults match docker-compose.yml
-docker compose up -d          # MongoDB 8 (replica set) + Redis
+docker compose up -d          # development only: MongoDB 8 (replica set) + Redis
 pnpm install
 pnpm setup                    # sync indexes, seed a demo company
 pnpm dev                      # http://localhost:3000
@@ -76,7 +77,7 @@ lib/            infrastructure: db, auth, session, permissions, money, quantity,
 models/         Mongoose schemas
 messages/       en/ and hi/ — one JSON per area
 scripts/        migrate, seed, org:create, backup decrypt/restore, icons
-deploy/         Caddy, scheduler, Mongo init for docker-compose.prod.yml
+deploy/         Proxmox installer and server setup (systemd, MongoDB, releases)
 docs/adr/       decisions and why
 ```
 
@@ -106,93 +107,57 @@ In the Proxmox host's shell (Datacenter → your node → **Shell**), as root:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/neosharks/flyashbricks/main/deploy/proxmox/install.sh)"
 ```
 
-It asks a few questions (press Enter for the defaults), then creates an unprivileged Debian
-LXC container (2 cores, 4 GB RAM, 20 GB disk) with Docker, generates every secret, builds
-and starts the production stack below, runs the migrations, and creates your company and its
-first admin — printing the temporary password once at the end.
+It asks a few questions (press Enter for the defaults) and creates a small unprivileged
+Ubuntu 24.04 container (2 cores, 1.5 GB RAM, 8 GB disk). Inside it, Node.js and MongoDB run
+as ordinary services — no Docker — and the newest ready-built release is downloaded, so
+nothing is compiled on the server. It generates every secret, prepares the database, and
+creates your company and its first admin, printing the temporary password once at the end.
 
-- **No domain?** Leave it empty: the app is served at `https://<container IP>` with a
-  certificate from Caddy's own authority. Browsers warn until you trust its root certificate
-  (the installer prints the command that shows it); install that on your phones to use the
-  app as a PWA.
-- **Domain?** Point its DNS at your public IP and forward ports 80 and 443 to the container
-  first; Caddy then gets a Let's Encrypt certificate.
-- The host CPU needs AVX (MongoDB 8 requires it).
+The app is reached through a **Cloudflare Tunnel**: give the installer the public address
+(e.g. `https://bricks.example.com`), and point the tunnel's public hostname at
+`http://<container IP>:3000` (type HTTP). Reserve the container's IP in your router.
+
+On the server:
+
+| What                  | Where / how                                                             |
+| --------------------- | ----------------------------------------------------------------------- |
+| Settings and secrets  | `/etc/flyashbricks/env`, then `systemctl restart flyashbricks`          |
+| Logs                  | `journalctl -u flyashbricks -f`                                         |
+| Uploads and backups   | `/var/lib/flyashbricks`                                                 |
+| Add a company / admin | `flyashbricks run create-organization --org "…" --name "…" --phone 98…` |
+| Health                | `/api/healthz` (liveness), `/api/readyz` (database reachable)           |
+
+Not on Proxmox? On any Ubuntu 24.04 server or VM, as root, with `APP_URL` set:
+
+```bash
+APP_URL=https://bricks.example.com bash -c "$(curl -fsSL https://raw.githubusercontent.com/neosharks/flyashbricks/main/deploy/proxmox/setup.sh)" setup install
+```
+
+Before going live, work through the checklist in [docs/security.md](docs/security.md). Why it
+is built this way: [ADR 0010](docs/adr/0010-native-install.md).
 
 ### Updates
 
-Versions are git tags (`v0.2.0`, `v0.3.0`, …), each published as a GitHub release. An admin
-opens **Administration → Updates** in the app, reads what is new, and presses **Update**. The
-app is rebuilt and restarted on the server in about five minutes, and the page follows along.
-Only the newest release can be installed this way, never an older one.
+Versions are git tags (`v0.2.0`, `v0.3.0`, …), each published as a GitHub release with
+ready-built archives. An admin opens **Administration → Updates** in the app, reads what is
+new, and presses **Update**: the server downloads the release, prepares the database, switches
+over, and switches back if the new version does not start. It takes about a minute, and the
+page follows along. Only the newest release can be installed this way, never an older one.
 
-The app itself cannot touch Docker. It leaves a request in `/opt/flyashbricks/.updater`; a
-systemd unit installed by the setup script checks it against the repository's tags and runs
-the update as root. The same update from the Proxmox host:
+The app itself runs unprivileged. It leaves a request in `/var/lib/flyashbricks/updater`; a
+systemd unit checks it against the newest release and runs the update as root. The same from
+the Proxmox host:
 
 ```bash
 pct exec <container id> -- flyashbricks update            # newest release
 pct exec <container id> -- flyashbricks update v0.3.0     # a specific one
 ```
 
-Servers installed before the Updates page existed get it by running the new installer once
-inside the container (secrets and data are kept):
-
-```bash
-cd /opt/flyashbricks && git pull && bash deploy/proxmox/setup.sh install
-```
-
 **Publishing a release:** set `version` in `package.json`, push to `main`, and once CI is
 green tag that commit: `git tag v0.3.0 && git push origin v0.3.0`. The release workflow checks
-the tag matches `package.json` and publishes the release with the commit subjects as its notes,
+the tag matches `package.json`, builds an archive for x64 and arm64
+(`scripts/package-release.sh`), and publishes them with the commit subjects as the notes,
 which is what admins see before updating.
-
-Settings live in `/opt/flyashbricks/.env.production` inside the container; edit, then run
-`flyashbricks update`. Not on Proxmox? `deploy/proxmox/setup.sh install` does the same on any
-Debian or Ubuntu server, run as root.
-
----
-
-## Deploy (own server)
-
-```bash
-cp deploy/.env.production.example .env.production      # fill in every secret
-chmod 600 .env.production
-openssl rand -base64 756 > deploy/mongo-keyfile && chmod 400 deploy/mongo-keyfile
-sudo chown 999:999 deploy/mongo-keyfile                 # the mongo container's user
-docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
-docker compose -f docker-compose.prod.yml --env-file .env.production run --rm migrate
-docker compose -f docker-compose.prod.yml --env-file .env.production run --rm migrate \
-  pnpm org:create --org "Company" --name "Owner" --phone 9876543210
-```
-
-Passwords that go into connection URLs (`MONGO_*_PASSWORD`, `REDIS_PASSWORD`) are made with
-`openssl rand -hex 32`; `AUTH_SECRET` and `CRON_SECRET` with `openssl rand -base64 48`.
-`.env.production` is read by Compose only: each container gets just the values listed for it
-in `docker-compose.prod.yml`, so a new setting must be added there as well.
-
-Point the domain's DNS at the server first; Caddy obtains the HTTPS certificate on start.
-Only ports 80/443 are published — MongoDB and Redis stay on an internal Docker network with
-authentication and no internet access. Every container runs on a read-only filesystem with
-all Linux capabilities dropped. Health: `/api/healthz` (liveness), `/api/readyz` (database
-reachable). Before going live, work through the checklist in
-[docs/security.md](docs/security.md).
-
-**Upgrading a server set up before the hardened compose file:** the app, MongoDB and Redis
-now run as their own unprivileged users rather than root. Volumes created earlier may still
-be owned by root; hand them over once, then start as usual:
-
-```bash
-docker compose -f docker-compose.prod.yml --env-file .env.production down
-docker run --rm -v fly-ash-bricks_backups:/b -v fly-ash-bricks_assets:/a alpine:3.22 \
-  chown -R 1001:1001 /b /a                              # the app's user
-docker run --rm -v fly-ash-bricks_mongo-data:/d alpine:3.22 chown -R 999:999 /d
-docker run --rm -v fly-ash-bricks_redis-data:/d alpine:3.22 chown -R 999:1000 /d
-```
-
-Moving to a cloud later: run the same image against MongoDB Atlas and a managed Redis, and
-call `/api/cron/outbox` every minute and `/api/cron/backup` nightly from the platform's
-scheduler with `Authorization: Bearer $CRON_SECRET`.
 
 ---
 

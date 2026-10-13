@@ -25,7 +25,7 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 function isSameOrigin(request: Request): boolean {
   const site = request.headers.get('sec-fetch-site');
   if (site) return site === 'same-origin';
-  return request.headers.get('origin') === new URL(publicEnv.NEXT_PUBLIC_APP_URL).origin;
+  return request.headers.get('origin') === new URL(publicEnv.APP_URL).origin;
 }
 
 /** Anyone may change their own photo; changing someone else's needs `users:write` over them. */

@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Structured data: what the product is, and the FAQ, for rich results. */
 async function jsonLd(locale: 'en' | 'hi') {
   const t = await getTranslations('marketing');
-  const url = new URL(sitePath(locale, 'home'), publicEnv.NEXT_PUBLIC_APP_URL).toString();
+  const url = new URL(sitePath(locale, 'home'), publicEnv.APP_URL).toString();
   const language = locale === 'hi' ? 'hi-IN' : 'en-IN';
   const data = [
     {

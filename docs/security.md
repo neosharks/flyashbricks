@@ -42,25 +42,29 @@ everything by design.
 - A restore refuses any file whose records belong to another organisation, and never takes
   password hashes from an unlocked file.
 
-**Deployment** (`docker-compose.prod.yml`)
+**Deployment** (`deploy/proxmox/setup.sh`, [ADR 0010](adr/0010-native-install.md))
 
-- Only Caddy publishes ports. MongoDB and Redis are on an internal network with no route to or
-  from the internet; the scheduler's network reaches the app and nothing else.
-- Each container gets only the variables it needs: the app never sees the MongoDB root password.
-- Every container has a read-only root filesystem, all Linux capabilities dropped (Caddy keeps
-  only `NET_BIND_SERVICE`) and `no-new-privileges`; the app, scheduler, MongoDB and Redis run
-  as non-root users.
-- Passwords never appear on a command line: Redis reads its password from a private tmpfs file,
-  the MongoDB healthcheck from its environment.
-- Caddy answers `404` for `/api/cron/*` from the internet, caps request bodies at 10 MB, and
-  overwrites `X-Forwarded-For` / `X-Real-IP`.
-- Logs rotate at 10 MB × 5 files per container.
+- The app runs under systemd as the unprivileged `flyashbricks` user, with `NoNewPrivileges`,
+  no capabilities, a read-only view of the system (`ProtectSystem=strict`) and write access
+  only to `/var/lib/flyashbricks`. Memory is capped at 640 MB.
+- MongoDB listens on `127.0.0.1` only, with authentication and a replica-set keyfile. The app
+  connects as a user limited to its own database; the root password is kept in
+  `/etc/flyashbricks/mongo-root` (root only) for maintenance.
+- Settings and secrets live in `/etc/flyashbricks/env` (`0640`, root and the app's group),
+  generated on the server; nothing secret is in the release archive.
+- Releases are downloaded from GitHub and refused unless their SHA-256 matches; Node.js is
+  checked against nodejs.org's published sums.
+- HTTPS is the Cloudflare Tunnel's job. The app listens on plain HTTP port 3000 for the tunnel
+  connector — anyone else who can reach that port can reach the app the same way, so keep it
+  on a trusted network (or run `cloudflared` on the same machine and set `HOSTNAME="127.0.0.1"`).
+- `/api/cron/*` needs `CRON_SECRET`; the timers call it on `127.0.0.1`.
+- Logs go to the journal (`journalctl -u flyashbricks`), which rotates them itself.
 
 **Supply chain** (`.github/`)
 
-- CI: gitleaks secret scan, `pnpm audit --audit-level=high`, and a Trivy scan of the built
-  images that fails on fixable HIGH/CRITICAL issues. Every action is pinned to a commit SHA.
-- Dependabot: npm weekly (grouped), GitHub Actions, Dockerfiles and Compose images monthly.
+- CI: gitleaks secret scan and `pnpm audit --audit-level=high`. Every action is pinned to a
+  commit SHA. Release archives are built by the release workflow, never on a laptop.
+- Dependabot: npm weekly (grouped), GitHub Actions monthly.
 - The pre-commit hook runs gitleaks on staged changes when it is installed
   (`brew install gitleaks`).
 
@@ -68,65 +72,48 @@ everything by design.
 
 Work through this before real data goes in, and again after moving servers.
 
-1. **Secrets** — every value in `.env.production` is freshly generated, none copied from an
-   example or another server: `openssl rand -hex 32` for `MONGO_ROOT_PASSWORD`,
-   `MONGO_APP_PASSWORD`, `REDIS_PASSWORD`; `openssl rand -base64 48` for `AUTH_SECRET` and
-   `CRON_SECRET`. `chmod 600 .env.production`; keep a copy in a password manager.
-2. **Mongo keyfile** — generated on this server, `chmod 400`, owned by `999:999` (README).
-3. **Volumes** — on a server that ran an older compose file, hand the volumes to the
-   unprivileged users once (README, "Upgrading").
-4. **Firewall** — only 22, 80 and 443 open on the host. SSH by key only, password login off.
-5. **DNS and HTTPS** — the domain points at the server and Caddy has a certificate
-   (`docker compose logs caddy`). `https://<domain>/api/cron/outbox` returns `404`.
-6. **Backups** — `BACKUP_PASSPHRASE` set (16+ characters, stored apart from the backups),
+1. **Secrets** — `/etc/flyashbricks/env` was generated on this server by the installer, never
+   copied from another. Keep a copy of it and of `/etc/flyashbricks/mongo-root` in a password
+   manager.
+2. **Network** — port 3000 is reachable only from the tunnel connector's network; MongoDB is
+   not reachable from outside the machine (`ss -tlnp` shows it on `127.0.0.1`). SSH by key
+   only, password login off.
+3. **Tunnel** — the public hostname points at `http://<machine>:3000`, and `APP_URL` is that
+   hostname. Sign in once and check the activity log shows your real address
+   (`CLIENT_IP_HEADER="cf-connecting-ip"`).
+4. **Backups** — `BACKUP_PASSPHRASE` set (16+ characters, stored apart from the backups),
    `BACKUP_EMAIL_TO` set so a copy leaves the building, and **one restore tested** into a
    scratch database (`docs/backup.md`).
-7. **Assets** — the `assets` volume is backed up too (photos are not in the database backup).
-8. **Mail** — `SMTP_URL` works: trigger a password reset or low-stock alert and check it arrives.
-9. **First admin** — created with `pnpm org:create`; the temporary password changed at first
-   sign-in. No demo data: `pnpm db:seed` refuses production and non-local databases.
-10. **Proxy hops** — anything in front of Caddy (Cloudflare, a load balancer)? Then follow
-    "Behind Cloudflare or a load balancer" below. Sign in once and check the activity log shows
-    your real address.
-11. **Updates** — merge Dependabot PRs regularly; rebuild with `docker compose ... up -d
---build --pull always` monthly so base images pick up security fixes.
-    The in-app Updates page never gives the app Docker access: it only writes a request file
-    that the host's updater (deploy/proxmox/setup.sh) accepts for the newest `vX.Y.Z` tag of
-    the repository. Anyone who can push tags to the repository can therefore ship code to
-    every server that updates — protect tags on GitHub to the maintainers.
+5. **Uploads** — `/var/lib/flyashbricks/assets` is backed up too (photos are not in the
+   database backup).
+6. **Mail** — `SMTP_URL` works: trigger a password reset or low-stock alert and check it arrives.
+7. **First admin** — created by the installer or `flyashbricks run create-organization`; the
+   temporary password changed at first sign-in. No demo data: the seed refuses production.
+8. **Updates** — install new releases from the app's Updates page or `flyashbricks update`.
+   The Updates page never gives the app root: it only writes a request file that the root
+   updater accepts for the newest published `vX.Y.Z` release. Anyone who can publish releases
+   on the repository can therefore ship code to every server that updates — protect tags and
+   releases on GitHub to the maintainers.
 
-## Behind Cloudflare or a load balancer
+## Behind another proxy
 
-Caddy then sees the proxy's address, not the visitor's. Tell Caddy which addresses are the
-proxy, and it takes the client address from the proxy's header instead — the app needs no
-change and `TRUSTED_PROXY_HOPS` stays `1`, because Caddy still overwrites `X-Forwarded-For`
-with that single resolved address. Add at the top of `deploy/Caddyfile`:
-
-```
-{
-	servers {
-		trusted_proxies static <the proxy's IP ranges, e.g. Cloudflare's published list>
-		client_ip_headers CF-Connecting-IP X-Forwarded-For
-	}
-}
-```
-
-Only list ranges the proxy really uses; anyone inside them could otherwise choose their own
-address. Raise `TRUSTED_PROXY_HOPS` only if you remove Caddy's `header_up` overwrite and let
-each proxy append instead. `TRUSTED_PROXY_HOPS=0` ignores the headers entirely (no addresses
-recorded) — for running the app with no proxy at all.
+Without Cloudflare, set `CLIENT_IP_HEADER="x-forwarded-for"` and `TRUSTED_PROXY_HOPS` to the
+number of proxies in front of the app that append to `X-Forwarded-For`; the address that many
+entries from the right is used, so anything a client wrote into the header itself is ignored.
+`TRUSTED_PROXY_HOPS=0` ignores the headers entirely (no addresses recorded).
 
 ## If something goes wrong
 
-**A secret may have leaked** (`.env.production` copied somewhere, a laptop lost):
+**A secret may have leaked** (`/etc/flyashbricks/env` copied somewhere, a laptop lost):
 
-1. Generate new values for everything that may be exposed.
-2. `MONGO_APP_PASSWORD`: change it in MongoDB first —
-   `db.getSiblingDB('admin').changeUserPassword('<MONGO_APP_USER>', '<new>')` as root — then in
-   `.env.production`. Root password the same way for `<MONGO_ROOT_USER>`.
-3. `REDIS_PASSWORD`, `CRON_SECRET`: change in `.env.production` only.
+1. Generate new values for everything that may be exposed (`openssl rand -hex 32`).
+2. The database password in `MONGODB_URI`: change it in MongoDB first, as root
+   (`mongosh -u root -p --authenticationDatabase admin`, then
+   `db.getSiblingDB('admin').changeUserPassword('flyash_app', '<new>')`), then in the env file.
+   The root password the same way, then in `/etc/flyashbricks/mongo-root`.
+3. `CRON_SECRET`: change in the env file only.
 4. `AUTH_SECRET`: changing it signs **everyone** out at once — the right move if it leaked.
-5. `docker compose -f docker-compose.prod.yml --env-file .env.production up -d` to apply.
+5. `systemctl restart flyashbricks` to apply.
 6. `BACKUP_PASSPHRASE`: new backups use the new one; existing files keep the old password, so
    treat every backup made with it as readable by whoever has it.
 
@@ -141,15 +128,15 @@ recorded) — for running the app with no proxy at all.
 
 **Data was damaged or deleted:**
 
-1. Stop further damage first (disable the account, or stop the app container).
+1. Stop further damage first (disable the account, or `systemctl stop flyashbricks`).
 2. Take a fresh backup of the current state before changing anything — it is evidence.
-3. Restore the last good backup from the `migrate` container, which reaches the database
-   (`docs/backup.md`); it asks for the backup password. Records added since that backup must
-   be re-entered.
+3. Restore the last good backup (`docs/backup.md`); it asks for the backup password. Records
+   added since that backup must be re-entered. Copy the file somewhere the app user can read
+   it first:
 
    ```bash
-   docker compose -f docker-compose.prod.yml --env-file .env.production run --rm \
-     -v "$PWD/<file>.fabk:/restore.fabk:ro" migrate pnpm backup:restore /restore.fabk --replace --yes
+   cp <file>.fabk /var/lib/flyashbricks/backups/ && chown flyashbricks /var/lib/flyashbricks/backups/<file>.fabk
+   flyashbricks run backup-restore /var/lib/flyashbricks/backups/<file>.fabk --replace --yes
    ```
 
 Afterwards, write down what happened and what changed, and add anything missing to this file.

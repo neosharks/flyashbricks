@@ -21,7 +21,7 @@ const devanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(publicEnv.NEXT_PUBLIC_APP_URL),
+  metadataBase: new URL(publicEnv.APP_URL),
   title: {
     default: publicEnv.NEXT_PUBLIC_APP_NAME,
     template: `%s · ${publicEnv.NEXT_PUBLIC_APP_NAME}`,

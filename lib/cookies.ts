@@ -8,7 +8,7 @@ import { publicEnv } from './public-env';
  * terminates TLS elsewhere) would otherwise set cookies the browser silently
  * drops, and every sign-in would appear to succeed and then vanish.
  */
-export const useSecureCookies = publicEnv.NEXT_PUBLIC_APP_URL.startsWith('https://');
+export const useSecureCookies = publicEnv.APP_URL.startsWith('https://');
 
 export const SESSION_COOKIE_NAME = `${useSecureCookies ? '__Secure-' : ''}flyash.session`;
 

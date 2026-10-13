@@ -35,11 +35,26 @@ redis.call('PEXPIRE', key, window)
 return { 1, limit - used - 1, window }
 `;
 
-/** Development-only fallback. Does not hold across replicas — production requires Redis. */
+/**
+ * Used when REDIS_URL is unset: enough for a single server, which is how this
+ * app is deployed. Counts reset when the app restarts, and do not hold across
+ * replicas — set REDIS_URL if it ever runs as more than one process.
+ */
 const memory = new Map<string, number[]>();
+
+/** Above this many tracked keys, forget the ones with no hit inside any window. */
+const SWEEP_AT = 5_000;
+
+function sweep(now: number): void {
+  const longest = Math.max(...Object.values(RATE_LIMITS).map((rule) => rule.windowMs));
+  for (const [key, hits] of memory) {
+    if ((hits.at(-1) ?? 0) <= now - longest) memory.delete(key);
+  }
+}
 
 function limitInMemory(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now();
+  if (memory.size > SWEEP_AT) sweep(now);
   const hits = (memory.get(key) ?? []).filter((t) => t > now - windowMs);
 
   if (hits.length >= limit) {

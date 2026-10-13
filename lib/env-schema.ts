@@ -63,7 +63,7 @@ const ServerEnvSchema = z
      */
     /**
      * Where uploaded files (employee photos, later documents) live. `local`
-     * writes under STORAGE_DIR on this server — a Docker volume in production,
+     * writes under STORAGE_DIR on this server — /var/lib/flyashbricks/assets in production,
      * outside anything the web server serves directly. Files are only ever
      * read back through the app, which checks who is asking.
      */
@@ -111,10 +111,16 @@ const ServerEnvSchema = z
     ),
 
     /**
+     * Where the visitor's address comes from. `cf-connecting-ip` behind a
+     * Cloudflare Tunnel; `x-forwarded-for` behind any other proxy, read with
+     * TRUSTED_PROXY_HOPS.
+     */
+    CLIENT_IP_HEADER: z.enum(['x-forwarded-for', 'cf-connecting-ip']).default('x-forwarded-for'),
+    /**
      * How many proxies in front of the app append to X-Forwarded-For. The
      * client address is read that many entries from the right, so anything a
-     * client puts in the header itself is ignored. 1 = Caddy alone; 2 = e.g.
-     * Cloudflare then Caddy; 0 = no proxy, the header is not trusted at all.
+     * client puts in the header itself is ignored. 1 = one proxy; 0 = no
+     * proxy, the header is not trusted at all.
      */
     TRUSTED_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(1),
   })
@@ -132,15 +138,6 @@ const ServerEnvSchema = z
       }
     }
 
-    if (value.NODE_ENV === 'production' && !value.REDIS_URL) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['REDIS_URL'],
-        message:
-          'REDIS_URL is required in production: in-process rate limits do not hold across replicas or restarts',
-      });
-    }
-
     if (value.NODE_ENV === 'production') {
       // The example values are public; a server started with them has no secrets at all.
       for (const key of ['AUTH_SECRET', 'CRON_SECRET'] as const) {
@@ -156,7 +153,7 @@ const ServerEnvSchema = z
       // them in the clear. Loopback stays allowed for trying a production build locally.
       const urls = {
         AUTH_URL: value.AUTH_URL,
-        NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+        APP_URL: process.env.APP_URL,
       };
       for (const [key, url] of Object.entries(urls)) {
         if (url && !/^https:\/\/|^http:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(url)) {
