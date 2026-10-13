@@ -20,6 +20,8 @@
 # Settings for `install` come from the environment, or from
 # /root/flyashbricks-install.env when install.sh pushed one:
 #   APP_URL         the public https:// address, e.g. https://bricks.example.com
+#   CF_TUNNEL_TOKEN Cloudflare Tunnel token; the connector then runs here and
+#                   reaches the app on localhost, which stops listening on the network
 #   ORG_NAME, ADMIN_NAME, ADMIN_PHONE, ADMIN_EMAIL
 #                   first company and its admin; skipped when ORG_NAME is empty
 #   SMTP_URL, MAIL_FROM
@@ -198,6 +200,45 @@ EOF
   fi
 }
 
+# The Cloudflare Tunnel connector, when a token is given. It runs on this
+# machine, so the app only has to listen on localhost. HTTP/2 rather than the
+# default QUIC, which many home networks block on UDP 7844.
+ensure_cloudflared() {
+  [[ -n "${CF_TUNNEL_TOKEN:-}" ]] || return 0
+  # shellcheck source=/dev/null
+  source /etc/os-release
+  if ! command -v cloudflared >/dev/null 2>&1; then
+    log 'Installing the Cloudflare Tunnel connector'
+    curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg -o /usr/share/keyrings/cloudflare-main.gpg
+    echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $VERSION_CODENAME main" \
+      >/etc/apt/sources.list.d/cloudflared.list
+    apt-get update -qq
+    apt-get install -y -qq cloudflared >/dev/null
+  fi
+  install -d -m 0700 /etc/cloudflared
+  (
+    umask 077
+    printf '%s' "$CF_TUNNEL_TOKEN" >/etc/cloudflared/token
+  )
+  cat >/etc/systemd/system/cloudflared.service <<'UNIT'
+[Unit]
+Description=Cloudflare Tunnel for Fly Ash Bricks
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/cloudflared --no-autoupdate tunnel --protocol http2 run --token-file /etc/cloudflared/token
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable cloudflared >/dev/null 2>&1
+  systemctl restart cloudflared
+}
+
 # Every value is double-quoted: systemd, Node's --env-file and bash all read
 # that the same way. Secrets are hex or base64, which need no escaping.
 write_config() {
@@ -211,6 +252,9 @@ write_config() {
   url=${url%/}
   local host=${url#https://}
   host=${host%%:*}
+  # With the connector on this machine nothing else needs to reach the app.
+  local listen=0.0.0.0
+  [[ -n "${CF_TUNNEL_TOKEN:-}" ]] && listen=127.0.0.1
   local mail_transport=console
   [[ -n "${SMTP_URL:-}" ]] && mail_transport=smtp
   local app_password
@@ -224,7 +268,7 @@ write_config() {
 # After editing: systemctl restart flyashbricks
 NODE_ENV="production"
 PORT="$PORT"
-HOSTNAME="0.0.0.0"
+HOSTNAME="$listen"
 APP_URL="$url"
 AUTH_URL="$url"
 AUTH_TRUST_HOST="true"
@@ -431,12 +475,25 @@ create_org() {
 print_summary() {
   local url
   url=$(sed -n 's/^APP_URL="\(.*\)"$/\1/p' "$CONFIG")
-  cat <<EOF
+  if systemctl is-enabled cloudflared >/dev/null 2>&1; then
+    cat <<EOF
+
+Fly Ash Bricks $(running_version) is running, with the tunnel connector on this machine
+($(systemctl is-active cloudflared)).
+
+  In Cloudflare, give the tunnel the public hostname $url
+  with service type HTTP and URL localhost:$PORT, then open it.
+EOF
+  else
+    cat <<EOF
 
 Fly Ash Bricks $(running_version) is running on http://$(primary_ip):$PORT
 
   Point the Cloudflare Tunnel's public hostname at that address (type HTTP),
   then open $url
+EOF
+  fi
+  cat <<EOF
 
   Update:     the app's Updates page, or: flyashbricks update
   Settings:   $CONFIG  (then: systemctl restart flyashbricks)
@@ -483,6 +540,7 @@ cmd_install() {
   ensure_user_and_dirs
   ensure_mongodb
   write_config
+  ensure_cloudflared
 
   if [[ -n "${RELEASE_FILE:-}" ]]; then
     version=$(basename "$RELEASE_FILE" | sed -n 's/^flyashbricks-\(v[0-9.]*[0-9]\)-linux-.*/\1/p')

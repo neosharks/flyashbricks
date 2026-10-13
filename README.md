@@ -113,9 +113,12 @@ as ordinary services — no Docker — and the newest ready-built release is dow
 nothing is compiled on the server. It generates every secret, prepares the database, and
 creates your company and its first admin, printing the temporary password once at the end.
 
-The app is reached through a **Cloudflare Tunnel**: give the installer the public address
-(e.g. `https://bricks.example.com`), and point the tunnel's public hostname at
-`http://<container IP>:3000` (type HTTP). Reserve the container's IP in your router.
+The app is reached through a **Cloudflare Tunnel**. Create the tunnel first (Zero Trust →
+Networks → Tunnels → Create, type Cloudflared), give it the public hostname you want with
+service type **HTTP** and URL **`localhost:3000`**, and copy its token (the value starting
+with `eyJ`). The installer asks for the public address and that token, runs the connector
+inside the container over HTTP/2, and keeps the app listening on localhost only. Without a
+token, point a connector elsewhere at `http://<container IP>:3000`.
 
 On the server:
 

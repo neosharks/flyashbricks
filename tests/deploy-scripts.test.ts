@@ -24,7 +24,17 @@ function runSetup(dir: string, script: string, env: Record<string, string> = {})
        ${script}`,
       dir,
     ],
-    { env: { ...process.env, APP_URL: '', SMTP_URL: '', MAIL_FROM: '', ...env }, encoding: 'utf8' },
+    {
+      env: {
+        ...process.env,
+        APP_URL: '',
+        SMTP_URL: '',
+        MAIL_FROM: '',
+        CF_TUNNEL_TOKEN: '',
+        ...env,
+      },
+      encoding: 'utf8',
+    },
   );
 }
 
@@ -84,6 +94,21 @@ describe('server setup script', () => {
       expect(env.AUTH_SECRET).not.toBe(env.CRON_SECRET);
       expect((await stat(file)).mode & 0o777).toBe(0o640);
       await expect(stat(path.join(dir, '.mongo-app'))).rejects.toThrow();
+    });
+
+    it('listens on the network only when the tunnel connector runs elsewhere', async () => {
+      runSetup(dir, 'write_config', { APP_URL: 'https://bricks.example.in' });
+      expect(parse(await readFile(path.join(dir, 'env'), 'utf8')).HOSTNAME).toBe('0.0.0.0');
+    });
+
+    it('listens on localhost only when the connector runs on this machine', async () => {
+      runSetup(dir, 'write_config', {
+        APP_URL: 'https://bricks.example.in',
+        CF_TUNNEL_TOKEN: 'eyJtest',
+      });
+      const text = await readFile(path.join(dir, 'env'), 'utf8');
+      expect(parse(text).HOSTNAME).toBe('127.0.0.1');
+      expect(text).not.toContain('eyJtest');
     });
 
     it('sends real email when an SMTP server is given', async () => {

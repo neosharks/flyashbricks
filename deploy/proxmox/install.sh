@@ -34,15 +34,29 @@ ask() {
   printf -v "$var" '%s' "${answer:-$default}"
 }
 
+# ask_secret VAR "Question" — like ask, without echoing what is typed.
+ask_secret() {
+  local var=$1 question=$2 answer=''
+  if [[ -n "${!var+x}" ]]; then
+    return
+  fi
+  if [[ -t 0 ]]; then
+    read -rsp "$question: " answer
+    echo
+  fi
+  printf -v "$var" '%s' "$answer"
+}
+
+# The preferred storage unless it is over 85% full (a thin pool refuses new
+# disks well before 100%); otherwise the one with the most space free.
 first_storage() {
   local content=$1 preferred=$2
-  local all
-  all=$(pvesm status -content "$content" 2>/dev/null | awk 'NR > 1 && $3 == "active" {print $1}')
-  if grep -qx "$preferred" <<<"$all"; then
-    echo "$preferred"
-  else
-    head -n1 <<<"$all"
-  fi
+  pvesm status -content "$content" 2>/dev/null | awk -v want="$preferred" '
+    NR > 1 && $3 == "active" && $7 + 0 < 85 {
+      if ($1 == want) { print $1; found = 1; exit }
+      if ($6 + 0 > best) { best = $6 + 0; name = $1 }
+    }
+    END { if (!found && name != "") print name }'
 }
 
 # MongoDB publishes server packages for Ubuntu 24.04 on both architectures.
@@ -74,10 +88,16 @@ if [[ "$CT_IP" != dhcp ]]; then
 fi
 echo
 echo 'App'
-echo '  Public address: the https:// hostname your Cloudflare Tunnel will serve,'
-echo '  e.g. https://bricks.example.com. Point the tunnel at http://<container IP>:3000.'
+echo '  Public address: the https:// hostname your Cloudflare Tunnel serves,'
+echo '  e.g. https://bricks.example.com.'
 ask APP_URL '  Public address' ''
 [[ "$APP_URL" =~ ^https:// ]] || die 'The public address must start with https://.'
+echo '  Tunnel token: from Cloudflare Zero Trust → Networks → Tunnels → your tunnel'
+echo '  (the long value starting with eyJ). The connector is then set up inside the'
+echo '  container. Leave empty to run cloudflared somewhere else.'
+ask_secret CF_TUNNEL_TOKEN '  Tunnel token (hidden)'
+[[ -z "$CF_TUNNEL_TOKEN" || "$CF_TUNNEL_TOKEN" == eyJ* ]] ||
+  die 'A tunnel token starts with eyJ; copy only that part of the command Cloudflare shows.'
 ask ORG_NAME '  Company name (empty to skip)' ''
 if [[ -n "$ORG_NAME" ]]; then
   ask ADMIN_NAME '  Owner name' ''
@@ -89,7 +109,8 @@ echo
 
 [[ "$CTID" =~ ^[0-9]+$ ]] || die "Container ID must be a number, got '$CTID'."
 pct status "$CTID" >/dev/null 2>&1 && die "Container $CTID already exists."
-[[ -n "$CT_STORAGE" ]] || die 'No storage accepts container disks; create one in Datacenter → Storage.'
+[[ -n "$CT_STORAGE" ]] ||
+  die "No storage with room accepts container disks. To use the root disk: pvesm set local --content iso,vztmpl,backup,rootdir"
 
 TEMPLATE_STORAGE=${TEMPLATE_STORAGE:-$(first_storage vztmpl local)}
 [[ -n "$TEMPLATE_STORAGE" ]] || die 'No storage accepts container templates.'
@@ -148,7 +169,7 @@ workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
 curl -fsSL "$RAW_BASE/deploy/proxmox/setup.sh" -o "$workdir/setup.sh"
 # %q quotes each value so names with spaces survive being sourced.
-for var in REPO APP_URL ORG_NAME ADMIN_NAME ADMIN_PHONE ADMIN_EMAIL; do
+for var in REPO APP_URL CF_TUNNEL_TOKEN ORG_NAME ADMIN_NAME ADMIN_PHONE ADMIN_EMAIL; do
   printf '%s=%q\n' "$var" "${!var:-}"
 done >"$workdir/answers.env"
 pct push "$CTID" "$workdir/answers.env" /root/flyashbricks-install.env --perms 600
