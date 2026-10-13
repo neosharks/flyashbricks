@@ -6,6 +6,7 @@ import { generateTemporaryPassword } from '@/lib/ids';
 import { escapeRegex } from '@/lib/utils';
 import { Organization } from '@/models/organization';
 import { Counter } from '@/models/counter';
+import { DeviceCredential } from '@/models/device-credential';
 import {
   BACKUP_COLLECTIONS,
   BACKUP_FORMAT,
@@ -117,6 +118,7 @@ async function removeOrganisation(orgId: ObjectId): Promise<void> {
     for (const model of Object.values(BACKUP_COLLECTIONS)) {
       await model.collection.deleteMany({ orgId }, { session });
     }
+    await DeviceCredential.collection.deleteMany({ orgId }, { session });
     await Counter.collection.deleteMany(
       { _id: { $regex: `^${escapeRegex(orgId.toString())}:` } } as Document,
       { session },

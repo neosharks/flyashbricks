@@ -40,6 +40,8 @@ export type UserDoc = {
    * disable, permission change and "sign out everywhere".
    */
   sessionsValidFrom: Date | null;
+  /** Whether this person may set a quick-sign-in PIN on their devices. */
+  pinSignInAllowed: boolean;
   lastLoginAt: Date | null;
   /** Optional photo; see models/asset.ts. */
   avatarAssetId: ObjectId | null;
@@ -95,6 +97,7 @@ const UserSchema = new Schema<UserDoc>(
     locale: { type: String, enum: ['en', 'hi'], required: true, default: 'en' },
     disabledAt: { type: Date, default: null },
     sessionsValidFrom: { type: Date, default: null },
+    pinSignInAllowed: { type: Boolean, required: true, default: true },
     lastLoginAt: { type: Date, default: null },
     avatarAssetId: { type: Schema.Types.ObjectId, ref: 'Asset', default: null },
     gender: { type: String, enum: GENDERS, required: true, default: 'unspecified' },

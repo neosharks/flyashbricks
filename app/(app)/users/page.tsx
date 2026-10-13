@@ -234,7 +234,10 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                       {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : tc('never')}
                     </p>
                   </div>
-                  <UserStatusBadge user={user} />
+                  <span className="flex flex-col items-end gap-1">
+                    <UserStatusBadge user={user} />
+                    {!user.pinSignInAllowed && <Badge tone="neutral">{t('pinOff')}</Badge>}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -299,7 +302,10 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                     <AccessSummary permissions={user.permissions} admin={user.role === 'admin'} />
                   </TD>
                   <TD>
-                    <UserStatusBadge user={user} />
+                    <span className="flex flex-wrap gap-1">
+                      <UserStatusBadge user={user} />
+                      {!user.pinSignInAllowed && <Badge tone="neutral">{t('pinOff')}</Badge>}
+                    </span>
                   </TD>
                   <TD muted className="whitespace-nowrap">
                     {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : tc('never')}

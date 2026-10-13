@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardBody, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { ChangePasswordForm } from '@/components/auth/change-password-form';
+import { DevicePinSettings } from '@/components/auth/device-pin-settings';
 import { SignOutEverywhereButton } from '@/components/auth/sign-out-everywhere';
 import { LanguageSwitch } from '@/components/layout/language-switch';
 import { SignOutButton } from '@/components/layout/sign-out-button';
@@ -10,6 +12,8 @@ import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { DisplaySettings } from '@/components/layout/display-settings';
 import { AccessSummary } from '@/components/users/access-matrix';
 import { AvatarUploader } from '@/components/users/avatar-uploader';
+import { isPinSignInAllowed, listDevicePins } from '@/features/auth/device-pin';
+import { DEVICE_COOKIE_NAME } from '@/lib/cookies';
 import { requireUserPage } from '@/lib/session';
 import { Page } from '@/components/ui/page';
 
@@ -17,10 +21,13 @@ export const metadata: Metadata = { title: 'My account' };
 
 export default async function AccountPage() {
   const user = await requireUserPage('/account');
-  const [t, tu, tc] = await Promise.all([
+  const token = (await cookies()).get(DEVICE_COOKIE_NAME)?.value ?? null;
+  const [t, tu, tc, pinAllowed, pinDevices] = await Promise.all([
     getTranslations('auth'),
     getTranslations('users'),
     getTranslations('common'),
+    isPinSignInAllowed(user),
+    listDevicePins(user, token),
   ]);
 
   return (
@@ -82,6 +89,15 @@ export default async function AccountPage() {
             <div className="border-border border-t pt-5">
               <SignOutEverywhereButton />
             </div>
+          </CardBody>
+        </Card>
+
+        <Card id="quick-sign-in">
+          <CardHeader>
+            <CardTitle>{t('quickPin.title')}</CardTitle>
+          </CardHeader>
+          <CardBody className="max-w-xl">
+            <DevicePinSettings allowed={pinAllowed} devices={pinDevices} />
           </CardBody>
         </Card>
 

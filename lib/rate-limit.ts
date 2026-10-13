@@ -83,6 +83,7 @@ export const RATE_LIMITS = {
   /** Behind `login`, at the password check itself; looser so it never trips first for real users. */
   loginBackend: { limit: 10, windowMs: 60_000 },
   passwordChange: { limit: 5, windowMs: 900_000 },
+  pinEnrol: { limit: 5, windowMs: 900_000 },
   userAdmin: { limit: 30, windowMs: 300_000 },
   write: { limit: 120, windowMs: 60_000 },
   export: { limit: 10, windowMs: 60_000 },

@@ -35,5 +35,9 @@
   "notAnImage": "This is not a photo. Choose a JPG, PNG or WebP image.",
   "mustBeEnglish": "Please type this in English (A–Z). Use the Hindi box for Hindi.",
   "mustBeHindi": "Please type this in Hindi (देवनागरी). Use the English box for English.",
-  "chooseGender": "Choose Male, Female or Other."
+  "chooseGender": "Choose Male, Female or Other.",
+  "pinFormat": "Enter exactly 6 digits.",
+  "pinTooSimple": "This PIN is too easy to guess. Avoid repeated digits and runs like 123456.",
+  "pinsDoNotMatch": "The two PINs do not match.",
+  "wrongPin": "That PIN is not correct."
 }

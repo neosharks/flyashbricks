@@ -38,6 +38,15 @@ type SearchParams = Record<string, string | string[] | undefined>;
 /** The sign-in table has its own sort and cursor, prefixed so they never clash with anything else here. */
 const LOGIN = 'login_';
 
+const LOGIN_REASONS = [
+  'bad_password',
+  'disabled',
+  'expired',
+  'bad_pin',
+  'pin_locked',
+  'pin_revoked',
+] as const;
+
 export default async function UserDetailPage({
   params,
   searchParams,
@@ -83,12 +92,15 @@ export default async function UserDetailPage({
 
   const failIcon = <XCircle aria-hidden className="text-danger mt-0.5 size-4 shrink-0" />;
 
-  const outcome = (login: LoginEventRow) =>
-    login.success
+  const outcome = (login: LoginEventRow) => {
+    const reason = LOGIN_REASONS.find((value) => value === login.reason);
+    const result = login.success
       ? t('detail.success')
-      : login.reason === 'bad_password' || login.reason === 'disabled'
-        ? `${t('detail.failed')} · ${t(`detail.reasons.${login.reason}`)}`
+      : reason
+        ? `${t('detail.failed')} · ${t(`detail.reasons.${reason}`)}`
         : t('detail.failed');
+    return login.method === 'pin' ? `${result} · ${t('detail.withPin')}` : result;
+  };
 
   return (
     <Page size="medium">
@@ -96,6 +108,7 @@ export default async function UserDetailPage({
         <div className="text-foreground-muted mt-2 flex flex-wrap items-center gap-2 text-sm">
           <Badge tone={user.role === 'admin' ? 'info' : 'neutral'}>{t(`roles.${user.role}`)}</Badge>
           <UserStatusBadge user={user} />
+          {!user.pinSignInAllowed && <Badge tone="neutral">{t('pinOff')}</Badge>}
           <span className="tabular-nums">{formatPhone(user.phone)}</span>
           {isSelf && <Badge tone="info">{t('detail.you')}</Badge>}
         </div>

@@ -22,8 +22,9 @@ import { StaffPayment } from '@/models/staff-payment';
  * Read and written through the native driver collections, so documents go
  * out and come back byte-for-byte, without Mongoose casting or `select: false`.
  *
- * Deliberately excluded: the outbox (transient delivery queue) and other
- * organisations' data. Counters are handled separately: their `_id` carries
+ * Deliberately excluded: the outbox (transient delivery queue), quick-sign-in
+ * PINs (bound to one browser's cookie, and a restore must not revive them) and
+ * other organisations' data. Counters are handled separately: their `_id` carries
  * the organisation id rather than an `orgId` field.
  */
 export const BACKUP_COLLECTIONS = {

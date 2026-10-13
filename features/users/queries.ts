@@ -28,6 +28,7 @@ export function toUserRow(doc: UserDoc, locale: 'en' | 'hi' = 'en'): UserRow {
     role: doc.role,
     permissions: { ...NO_ACCESS, ...doc.permissions },
     mustChangePassword: doc.mustChangePassword,
+    pinSignInAllowed: doc.pinSignInAllowed,
     disabled: doc.disabledAt !== null,
     lastLoginAt: doc.lastLoginAt ? dateToIso(doc.lastLoginAt) : null,
     avatarAssetId: doc.avatarAssetId ? idToString(doc.avatarAssetId) : null,
@@ -135,6 +136,7 @@ export async function getLoginHistory(
     rows: page.rows.map((row) => ({
       id: idToString(row._id),
       success: row.success,
+      method: row.method,
       reason: row.reason,
       ip: row.ip,
       userAgent: row.userAgent,

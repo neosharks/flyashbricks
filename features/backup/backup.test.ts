@@ -72,8 +72,9 @@ describe('buildBackup', () => {
   it('covers every collection the app scopes by organisation', () => {
     // Derived from the models, so adding an org-scoped collection without
     // adding it to the backup fails here instead of silently losing data.
+    // Device PINs are left out on purpose: they belong to a browser, not to the data.
     const scoped = Object.values(allModels)
-      .filter((model) => 'orgId' in model.schema.paths)
+      .filter((model) => 'orgId' in model.schema.paths && model.modelName !== 'DeviceCredential')
       .map((model) => model.modelName)
       .sort();
     const backedUp = Object.values(BACKUP_COLLECTIONS)

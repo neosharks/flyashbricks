@@ -1,7 +1,8 @@
 import 'server-only';
 import NextAuth, { CredentialsSignin, type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { Types, type ObjectId } from '@/lib/mongoose';
+import { cookies } from 'next/headers';
+import { Types } from '@/lib/mongoose';
 import { connectDb } from './db';
 import { verifyPassword, burnTimingBudget } from './password';
 import { logger } from './logger';
@@ -9,42 +10,29 @@ import { env } from './env';
 import { rateLimit } from './rate-limit';
 import { normalizePhone } from './phone';
 import { requestInfo } from './request-info';
-import { SESSION_COOKIE_NAME, useSecureCookies } from './cookies';
+import { DEVICE_COOKIE_NAME, SESSION_COOKIE_NAME, useSecureCookies } from './cookies';
 import { NO_ACCESS } from './permissions';
 import { User } from '@/models/user';
-import { LoginEvent } from '@/models/login-event';
-import { CredentialsSchema } from '@/features/auth/schema';
+import { CredentialsSchema, PinSignInSchema } from '@/features/auth/schema';
+import { hashDeviceToken, verifyDevicePin } from '@/features/auth/device-pin';
+import { recordLogin } from '@/features/auth/login-events';
 
 class InvalidCredentials extends CredentialsSignin {
   override code = 'invalid_credentials';
+}
+
+/** Carries why a PIN was refused back to `signInWithPin`, which words it for the person. */
+class PinRefused extends CredentialsSignin {
+  constructor(reason: 'unknown_device' | 'bad_pin' | 'pin_locked') {
+    super();
+    this.code = reason;
+  }
 }
 
 function identifierFilter(identifier: string): { email: string } | { phone: string } | null {
   if (identifier.includes('@')) return { email: identifier.toLowerCase() };
   const phone = normalizePhone(identifier);
   return phone ? { phone } : null;
-}
-
-async function recordLogin(
-  user: { _id: ObjectId; orgId: ObjectId },
-  success: boolean,
-  reason: string | null,
-): Promise<void> {
-  try {
-    const { ip, userAgent } = await requestInfo();
-    await LoginEvent.create({
-      orgId: user.orgId,
-      userId: user._id,
-      success,
-      reason,
-      ip,
-      userAgent,
-    });
-    if (success) await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
-  } catch (err) {
-    // A failed history write must not lock someone out of their account.
-    logger.error({ err }, 'failed to record login event');
-  }
 }
 
 const config: NextAuthConfig = {
@@ -120,6 +108,29 @@ const config: NextAuthConfig = {
 
         await recordLogin(user, true, null);
         return { id: user._id.toString(), name: user.name };
+      },
+    }),
+    // Quick sign-in on a device that was set up while signed in with the
+    // password. The device proves itself with its cookie; the PIN is the
+    // second factor that stops anyone who merely picks up the phone.
+    Credentials({
+      id: 'pin',
+      credentials: { pin: {} },
+      authorize: async (raw) => {
+        const parsed = PinSignInSchema.safeParse({ pin: raw.pin });
+        if (!parsed.success) throw new PinRefused('bad_pin');
+
+        const token = (await cookies()).get(DEVICE_COOKIE_NAME)?.value ?? null;
+        if (!token) throw new PinRefused('unknown_device');
+
+        const { ip } = await requestInfo();
+        for (const key of [`ip:${ip ?? 'unknown'}`, `device:${hashDeviceToken(token)}`]) {
+          if (!(await rateLimit('loginBackend', key)).success) throw new PinRefused('bad_pin');
+        }
+
+        const result = await verifyDevicePin(token, parsed.data.pin);
+        if (!result.ok) throw new PinRefused(result.reason);
+        return result.user;
       },
     }),
   ],

@@ -36,7 +36,9 @@
       "enable": "Enabled an employee",
       "sign_out_everywhere": "Signed an employee out everywhere",
       "photo_change": "Changed a profile photo",
-      "photo_remove": "Removed a profile photo"
+      "photo_remove": "Removed a profile photo",
+      "pin_enrol": "Set a quick-sign-in PIN on a device",
+      "pin_remove": "Removed a quick-sign-in PIN from a device"
     },
     "material": {
       "create": "Added a raw material",

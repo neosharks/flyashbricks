@@ -5,6 +5,7 @@
 export { Organization } from './organization';
 export { User } from './user';
 export { LoginEvent } from './login-event';
+export { DeviceCredential } from './device-credential';
 export { AuditLog } from './audit-log';
 export { Outbox } from './outbox';
 export { Counter } from './counter';

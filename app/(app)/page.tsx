@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import {
@@ -15,6 +16,7 @@ import {
   Truck,
   Package,
 } from 'lucide-react';
+import { PinOffer } from '@/components/auth/pin-offer';
 import { BrickStack } from '@/components/charts/brick-stack';
 import { FactoryScene } from '@/components/illustrations';
 import { ActivityList } from '@/components/activity/activity-list';
@@ -32,6 +34,8 @@ import { presetRange } from '@/features/production/range';
 import { dailySales, periodStats } from '@/features/sales/queries';
 import { customerStats, listCustomers } from '@/features/customers/queries';
 import { listActivity } from '@/features/activity/queries';
+import { shouldOfferDevicePin } from '@/features/auth/device-pin';
+import { DEVICE_COOKIE_NAME, PIN_OFFER_COOKIE_NAME } from '@/lib/cookies';
 import { formatMoney, formatMoneyCompact } from '@/lib/money';
 import { getOrgTimezone } from '@/lib/org';
 import { can, type SessionUser } from '@/lib/permissions';
@@ -113,15 +117,23 @@ async function loadDashboard(user: SessionUser, timezone: string) {
   };
 }
 
+/** Right after a password sign-in, on a device that has no PIN yet. */
+async function offerPin(user: SessionUser): Promise<boolean> {
+  const jar = await cookies();
+  if (!jar.has(PIN_OFFER_COOKIE_NAME)) return false;
+  return shouldOfferDevicePin(user, jar.get(DEVICE_COOKIE_NAME)?.value ?? null);
+}
+
 export default async function DashboardPage() {
   const user = await requireUserPage('/');
   const timezone = await getOrgTimezone(user.orgId);
-  const [t, tm, tu, locale, data] = await Promise.all([
+  const [t, tm, tu, locale, data, pinOffer] = await Promise.all([
     getTranslations('dashboard'),
     getTranslations('rawMaterials'),
     getTranslations('common'),
     getLocale(),
     loadDashboard(user, timezone),
+    offerPin(user),
   ]);
 
   const firstName = user.name.split(/\s+/)[0] ?? user.name;
@@ -196,6 +208,8 @@ export default async function DashboardPage() {
           {t('greeting', { name: firstName })}
         </h1>
       </header>
+
+      {pinOffer && <PinOffer />}
 
       {fresh ? (
         <Card className="brick-pattern">

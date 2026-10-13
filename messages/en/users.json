@@ -78,7 +78,9 @@
     "accessHint": "Admins always have full access.",
     "create": "Create employee",
     "save": "Save changes",
-    "alertsHint": "Each person chooses which alerts they get, and how (app, email, SMS, WhatsApp), on their Notifications page."
+    "alertsHint": "Each person chooses which alerts they get, and how (app, email, SMS, WhatsApp), on their Notifications page.",
+    "pinSignIn": "Allow quick sign-in with a PIN",
+    "pinSignInHint": "They can set a 6-digit PIN on a device after signing in there with their password. Turning this off removes their PINs at once."
   },
   "created": "Employee added",
   "updated": "Changes saved",
@@ -101,7 +103,10 @@
     "reasons": {
       "bad_password": "Wrong password",
       "disabled": "Account disabled",
-      "expired": "Temporary password expired"
+      "expired": "Temporary password expired",
+      "bad_pin": "Wrong PIN",
+      "pin_locked": "Too many wrong PINs",
+      "pin_revoked": "PIN no longer valid"
     },
     "lastLogin": "Last sign-in",
     "joined": "Added on",
@@ -113,7 +118,8 @@
       "failed": "Failed"
     },
     "seeAllActivity": "See all activity",
-    "device": "Device"
+    "device": "Device",
+    "withPin": "With PIN"
   },
   "actions": {
     "resetPassword": "Reset password",
@@ -169,5 +175,6 @@
     "active": "Active",
     "pending": "Not signed in yet",
     "disabled": "Disabled"
-  }
+  },
+  "pinOff": "PIN off"
 }

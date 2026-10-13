@@ -13,6 +13,7 @@ export type UserRow = {
   role: Role;
   permissions: Permissions;
   mustChangePassword: boolean;
+  pinSignInAllowed: boolean;
   disabled: boolean;
   lastLoginAt: string | null;
   avatarAssetId: string | null;
@@ -25,6 +26,7 @@ export type UserRow = {
 export type LoginEventRow = {
   id: string;
   success: boolean;
+  method: 'password' | 'pin';
   reason: string | null;
   ip: string | null;
   userAgent: string | null;

@@ -16,6 +16,7 @@ import { User, type UserDoc } from '@/models/user';
 import { notify } from '@/features/notifications/notify';
 import { nextAvatarVariant } from '@/features/people/avatar';
 import { defaultPrefs } from '@/features/notifications/prefs';
+import { revokeDevicePins } from '@/features/auth/device-pin';
 import { CreateUserSchema, foldPermissions, UpdateUserSchema, UserIdSchema } from './schema';
 
 function isDuplicateKey(
@@ -109,6 +110,7 @@ export async function createUser(
         name: parsed.data.name,
         role: parsed.data.role,
         permissions: parsed.data.permissions,
+        pinSignInAllowed: parsed.data.pinSignInAllowed,
       },
     });
 
@@ -150,9 +152,11 @@ export async function updateUser(
     }
     if (!canGrant(actor, changes.role, changes.permissions)) throw new ForbiddenError();
 
+    const pinChanged = changes.pinSignInAllowed !== target.pinSignInAllowed;
     const accessChanged =
       changes.role !== target.role ||
-      JSON.stringify(changes.permissions) !== JSON.stringify({ ...target.permissions });
+      JSON.stringify(changes.permissions) !== JSON.stringify({ ...target.permissions }) ||
+      pinChanged;
 
     if (accessChanged && id === actor.id) {
       throw new ConflictError('CANNOT_CHANGE_SELF', 'Cannot change own access');
@@ -169,6 +173,7 @@ export async function updateUser(
       if (isDuplicateKey(err)) throw duplicateError(err);
       throw err;
     }
+    if (!changes.pinSignInAllowed) await revokeDevicePins(target.orgId, target._id);
 
     await recordAudit({
       actor,
@@ -179,6 +184,9 @@ export async function updateUser(
         name: changes.name,
         ...(accessChanged
           ? { role: { from: target.role, to: changes.role }, permissions: changes.permissions }
+          : {}),
+        ...(pinChanged
+          ? { pinSignInAllowed: { from: target.pinSignInAllowed, to: changes.pinSignInAllowed } }
           : {}),
       },
     });
@@ -218,6 +226,7 @@ export async function resetUserPassword(
         },
       },
     );
+    await revokeDevicePins(target.orgId, target._id);
 
     await recordAudit({
       actor,
@@ -251,6 +260,7 @@ export async function setUserDisabled(id: string, disabled: boolean): Promise<Ac
         ? { $set: { disabledAt: new Date(), sessionsValidFrom: new Date() } }
         : { $set: { disabledAt: null } },
     );
+    if (disabled) await revokeDevicePins(target.orgId, target._id);
 
     await recordAudit({
       actor,
@@ -279,6 +289,7 @@ export async function signOutUserEverywhere(id: string): Promise<ActionResult> {
       { _id: target._id, orgId: actor.orgId },
       { $set: { sessionsValidFrom: new Date() } },
     );
+    await revokeDevicePins(target.orgId, target._id);
 
     await recordAudit({
       actor,

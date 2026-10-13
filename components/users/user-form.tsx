@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { BilingualInput } from '@/components/ui/bilingual-input';
 import { FormErrors } from '@/components/ui/form-errors';
 import { Field, FieldError, Fieldset } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
+import { Checkbox, Input } from '@/components/ui/input';
 import { createUser, updateUser } from '@/features/users/actions';
 import { CreateUserSchema, foldPermissions, UpdateUserSchema } from '@/features/users/schema';
 import type { UserRow } from '@/features/users/types';
@@ -234,6 +234,28 @@ export function UserForm({ user, actorIsAdmin, ceiling, isSelf = false }: UserFo
             ))}
           {form.error('permissions') && <FieldError>{form.error('permissions')}</FieldError>}
         </fieldset>
+
+        <label
+          className={cn(
+            'flex cursor-pointer items-start gap-3',
+            lockAccess && 'cursor-not-allowed opacity-60',
+          )}
+        >
+          <Checkbox
+            name="pinSignInAllowed"
+            defaultChecked={user?.pinSignInAllowed ?? true}
+            disabled={lockAccess}
+            className="mt-0.5 shrink-0"
+          />
+          <span>
+            <span className="block text-sm font-medium">{t('form.pinSignIn')}</span>
+            <span className="text-foreground-muted block text-xs">{t('form.pinSignInHint')}</span>
+          </span>
+        </label>
+        {/* Like role and access, your own setting is changed by someone else. */}
+        {lockAccess && user?.pinSignInAllowed && (
+          <input type="hidden" name="pinSignInAllowed" value="on" />
+        )}
 
         <p className="text-foreground-muted flex items-start gap-2 text-xs">
           <Bell aria-hidden className="mt-0.5 size-3.5 shrink-0" />

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { GENDERS } from '@/models/constants';
 import { bilingualFields } from '@/lib/bilingual';
 import { ACCESS_LEVELS, MODULES, ROLES, type Permissions } from '@/lib/permissions';
-import { objectId, optionalEmail, optionalText, phone } from '@/lib/form-schema';
+import { checkbox, objectId, optionalEmail, optionalText, phone } from '@/lib/form-schema';
 
 const level = z.enum(ACCESS_LEVELS, 'invalid');
 
@@ -37,6 +37,7 @@ const fields = {
   jobTitle: optionalText(80),
   role: z.enum(ROLES, 'invalid'),
   permissions: PermissionsSchema,
+  pinSignInAllowed: checkbox(),
 };
 
 function bilingual<T extends Record<string, unknown>>(value: T) {

@@ -26,6 +26,12 @@ everything by design.
   passwords expire and must be changed on first use. `sessionsValidFrom` on a user ends every
   session issued before it — set by password changes, resets, disabling, and "Sign out
   everywhere".
+- Quick sign-in PIN: only on a device that signed in with the password first. The device holds
+  a random 32-byte token in an httpOnly cookie; the server stores its SHA-256 and a bcrypt hash
+  of the 6-digit PIN (`models/device-credential.ts`). Rate-limited per address and per device;
+  the fifth wrong PIN deletes it. Every PIN a person has is deleted on a password change or
+  reset, "Sign out everywhere", disabling the account, or a manager turning PIN sign-in off for
+  them; a PIN unused for 90 days expires. PINs are not included in backups.
 - Server Actions check permissions first and validate every input with Zod; bodies are capped at
   256 KB. The backup download accepts same-origin requests only.
 - One strict Content-Security-Policy (`proxy.ts`), HSTS with preload, `X-Frame-Options: DENY`,

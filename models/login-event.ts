@@ -9,7 +9,9 @@ export type LoginEventDoc = {
   orgId: ObjectId;
   userId: ObjectId;
   success: boolean;
-  /** Why it failed, when it did: `bad_password`, `disabled`. */
+  /** How they signed in: phone/email and password, or this device's PIN. */
+  method: 'password' | 'pin';
+  /** Why it failed, when it did: `bad_password`, `bad_pin`, `pin_locked`, `disabled`. */
   reason: string | null;
   ip: string | null;
   userAgent: string | null;
@@ -21,6 +23,7 @@ const LoginEventSchema = new Schema<LoginEventDoc>(
     orgId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     success: { type: Boolean, required: true },
+    method: { type: String, enum: ['password', 'pin'], required: true, default: 'password' },
     reason: { type: String, default: null, maxlength: 40 },
     ip: { type: String, default: null, maxlength: 64 },
     userAgent: { type: String, default: null, maxlength: 300 },

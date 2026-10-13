@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { objectId } from '@/lib/form-schema';
 
 /** Either a phone number or an email address; resolved in `lib/auth.ts`. */
 export const CredentialsSchema = z
@@ -31,3 +32,25 @@ export const ChangePasswordSchema = z
   });
 
 export const LocaleSchema = z.object({ locale: z.enum(['en', 'hi']) }).strict();
+
+const pinDigits = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/, 'pinFormat');
+
+/** Six of one digit, or a straight run up or down: the first guesses anyone tries. */
+function isGuessablePin(pin: string): boolean {
+  const digits = Array.from(pin, Number);
+  const steps = new Set(digits.slice(1).map((digit, i) => digit - (digits[i] ?? 0)));
+  return steps.size === 1 && [0, 1, -1].some((step) => steps.has(step));
+}
+
+export const PinSignInSchema = z.object({ pin: pinDigits }).strict();
+
+export const EnrolPinSchema = z
+  .object({ pin: pinDigits, confirmPin: z.string().trim() })
+  .strict()
+  .refine((v) => !isGuessablePin(v.pin), { message: 'pinTooSimple', path: ['pin'] })
+  .refine((v) => v.pin === v.confirmPin, { message: 'pinsDoNotMatch', path: ['confirmPin'] });
+
+export const DeviceIdSchema = z.object({ id: objectId() }).strict();
