@@ -20,6 +20,14 @@ const FILES = {
   log: 'update.log',
 } as const;
 
+/**
+ * The folder is only known at runtime; without the ignore comment Next's file
+ * tracer copies the whole project into the server bundle to be safe.
+ */
+function at(dir: string, name: string): string {
+  return path.join(/* turbopackIgnore: true */ dir, name);
+}
+
 /** The last part of the log is enough to see what happened; builds print a lot. */
 const LOG_TAIL_BYTES = 16 * 1024;
 
@@ -54,7 +62,7 @@ async function exists(file: string): Promise<boolean> {
 async function readStatus(dir: string): Promise<UpdateStatus | null> {
   try {
     const parsed = StatusSchema.safeParse(
-      JSON.parse(await readFile(path.join(dir, FILES.status), 'utf8')),
+      JSON.parse(await readFile(at(dir, FILES.status), 'utf8')),
     );
     return parsed.success ? parsed.data : null;
   } catch {
@@ -65,7 +73,7 @@ async function readStatus(dir: string): Promise<UpdateStatus | null> {
 async function readLogTail(dir: string): Promise<string> {
   let handle;
   try {
-    handle = await open(path.join(dir, FILES.log), 'r');
+    handle = await open(at(dir, FILES.log), 'r');
     const { size } = await handle.stat();
     const length = Math.min(size, LOG_TAIL_BYTES);
     const buffer = Buffer.alloc(length);
@@ -81,11 +89,11 @@ async function readLogTail(dir: string): Promise<string> {
 }
 
 export async function readUpdaterState(dir: string | undefined): Promise<UpdaterState> {
-  if (!dir || !(await exists(path.join(dir, FILES.agent)))) {
+  if (!dir || !(await exists(at(dir, FILES.agent)))) {
     return { available: false, pending: false, status: null, log: '' };
   }
   const [pending, status, log] = await Promise.all([
-    exists(path.join(dir, FILES.request)),
+    exists(at(dir, FILES.request)),
     readStatus(dir),
     readLogTail(dir),
   ]);
@@ -105,11 +113,11 @@ export async function writeUpdateRequest(
   request: { version: string; requestedBy: string },
 ): Promise<void> {
   if (!RELEASE_TAG.test(request.version)) throw new Error(`Not a release tag: ${request.version}`);
-  const target = path.join(dir, FILES.request);
+  const target = at(dir, FILES.request);
   if (await exists(target)) {
     throw new ConflictError('UPDATE_IN_PROGRESS', 'An update is already waiting to start');
   }
-  const temporary = path.join(dir, `.${FILES.request}.${process.pid}.tmp`);
+  const temporary = at(dir, `.${FILES.request}.${process.pid}.tmp`);
   await writeFile(
     temporary,
     JSON.stringify({ ...request, requestedAt: new Date().toISOString() }),
