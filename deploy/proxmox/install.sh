@@ -15,9 +15,17 @@ set -euo pipefail
 REPO=${REPO:-neosharks/flyashbricks}
 RAW_BASE=${RAW_BASE:-https://raw.githubusercontent.com/$REPO/main}
 
+CREATED=''
+
 log() { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
+# Once the container exists, a failure leaves it half made; say how to clear it.
+cleanup_hint() {
+  [[ -n "$CREATED" ]] && printf '\nTo try again, first remove the container: pct stop %s; pct destroy %s\n' "$CTID" "$CTID" >&2
+  return 0
+}
 die() {
   printf '\033[1;31mError:\033[0m %s\n' "$*" >&2
+  cleanup_hint
   exit 1
 }
 
@@ -85,6 +93,7 @@ ask CT_BRIDGE '  Network bridge' vmbr0
 ask CT_IP '  IPv4 address, CIDR (e.g. 192.168.1.50/24) or dhcp' dhcp
 if [[ "$CT_IP" != dhcp ]]; then
   ask CT_GW '  Gateway' ''
+  [[ -n "$CT_GW" ]] || die 'A fixed IP needs a gateway (usually your router, e.g. 192.168.1.1).'
 fi
 echo
 echo 'App'
@@ -150,6 +159,8 @@ pct create "$CTID" "$TEMPLATE_STORAGE:vztmpl/$TEMPLATE" \
   --onboot 1 \
   --tags flyashbricks \
   --description "Fly Ash Bricks — update with: pct exec $CTID -- flyashbricks update" >/dev/null
+CREATED=1
+trap cleanup_hint ERR
 pct start "$CTID"
 
 # A name lookup with no reachable DNS server can hang; bound every try.
