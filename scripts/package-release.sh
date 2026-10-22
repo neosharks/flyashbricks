@@ -35,7 +35,7 @@ cp -R public "$out/app/public"
 rm -f "$out"/app/.env*
 
 pnpm exec esbuild scripts/migrate.ts scripts/create-organization.ts scripts/backup-restore.ts \
-  scripts/backup-decrypt.ts \
+  scripts/backup-decrypt.ts scripts/seed.ts \
   --bundle --splitting --platform=node --format=esm --target=node24 --conditions=react-server \
   --outdir="$out/scripts" --out-extension:.js=.mjs --log-level=warning \
   '--banner:js=import { createRequire } from "node:module"; const require = createRequire(import.meta.url);'

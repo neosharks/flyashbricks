@@ -15,6 +15,8 @@ const ServerEnvSchema = z
     AUTH_SECRET: z.string().min(32),
     AUTH_URL: z.url().optional(),
     AUTH_TRUST_HOST: z.stringbool().default(false),
+    /** Lists the demo sign-ins (features/auth/demo-accounts.ts) on the login screen. Demo servers only. */
+    DEMO_LOGINS: z.stringbool().default(false),
 
     REDIS_URL: z.string().startsWith('redis').optional(),
 

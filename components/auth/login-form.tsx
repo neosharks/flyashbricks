@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Alert } from '@/components/ui/alert';
@@ -10,22 +10,28 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { signInWithCredentials, signInWithPin } from '@/features/auth/actions';
+import type { DemoTier } from '@/features/auth/demo-accounts';
 import { CredentialsSchema, PinSignInSchema } from '@/features/auth/schema';
 import { useActionForm } from '@/hooks/use-action-form';
+
+export type DemoSignIn = { tier: DemoTier; phone: string; password: string };
 
 /** Failures after which this device's PIN is gone and only the password is left. */
 const PIN_GONE = new Set(['PIN_LOCKED', 'PIN_UNAVAILABLE']);
 
 /**
  * Opens on the PIN when this device has one (`pinName` is the person's first
- * name), with the phone and password always one tap away.
+ * name), with the phone and password always one tap away. `demo` lists the
+ * demo company's sign-ins on a demo server.
  */
 export function LoginForm({
   callbackUrl,
   pinName = null,
+  demo = [],
 }: {
   callbackUrl: string;
   pinName?: string | null;
+  demo?: DemoSignIn[];
 }) {
   const [mode, setMode] = useState<'pin' | 'password'>(pinName ? 'pin' : 'password');
   const [pinGone, setPinGone] = useState<string | null>(null);
@@ -48,6 +54,7 @@ export function LoginForm({
       callbackUrl={callbackUrl}
       notice={pinGone}
       onUsePin={pinName && !pinGone ? () => setMode('pin') : undefined}
+      demo={demo}
     />
   );
 }
@@ -129,19 +136,32 @@ function PasswordForm({
   callbackUrl,
   notice,
   onUsePin,
+  demo,
 }: {
   callbackUrl: string;
   notice: string | null;
   onUsePin: (() => void) | undefined;
+  demo: DemoSignIn[];
 }) {
   const t = useTranslations('auth');
+  const formRef = useRef<HTMLFormElement>(null);
   const form = useActionForm(signInWithCredentials, useSignedIn(), {
     schema: CredentialsSchema,
     prepare: (raw) => ({ identifier: raw.identifier, password: raw.password }),
   });
 
+  // The inputs are uncontrolled (use-action-form), so a demo pick writes them directly.
+  function fill(account: DemoSignIn) {
+    const fields = formRef.current?.elements;
+    const identifier = fields?.namedItem('identifier');
+    const password = fields?.namedItem('password');
+    if (identifier instanceof HTMLInputElement) identifier.value = account.phone;
+    if (password instanceof HTMLInputElement) password.value = account.password;
+  }
+
   return (
     <form
+      ref={formRef}
       method="post"
       onSubmit={form.onSubmit}
       onChange={form.onChange}
@@ -180,6 +200,52 @@ function PasswordForm({
           {t('quickPin.usePin')}
         </Button>
       )}
+      {demo.length > 0 && <DemoSignIns accounts={demo} onPick={fill} />}
     </form>
+  );
+}
+
+function DemoSignIns({
+  accounts,
+  onPick,
+}: {
+  accounts: DemoSignIn[];
+  onPick: (account: DemoSignIn) => void;
+}) {
+  const t = useTranslations('auth.demo');
+  return (
+    <section
+      aria-labelledby="demo-sign-ins"
+      className="border-border bg-surface-muted mt-2 rounded-lg border p-4 text-sm"
+    >
+      <h2 id="demo-sign-ins" className="font-semibold">
+        {t('title')}
+      </h2>
+      <p className="text-foreground-muted mt-1 text-xs">
+        {t('body', { password: accounts[0]?.password ?? '' })}
+      </p>
+      <ul className="mt-3 flex flex-col gap-2">
+        {accounts.map((account) => (
+          <li key={account.phone} className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-medium">{t(`tiers.${account.tier}.name`)}</p>
+              <p className="text-foreground-muted text-xs">
+                <span className="font-mono">{account.phone}</span> ·{' '}
+                {t(`tiers.${account.tier}.access`)}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPick(account)}
+              aria-label={t('useAs', { tier: t(`tiers.${account.tier}.name`) })}
+            >
+              {t('use')}
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

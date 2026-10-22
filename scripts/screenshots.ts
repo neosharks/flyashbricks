@@ -10,10 +10,11 @@ import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import sharp from 'sharp';
+import { DEMO_PASSWORD, demoAccount } from '../features/auth/demo-accounts';
 
 const BASE = process.argv[2] ?? 'http://localhost:3000';
 const OUT = path.join('public', 'screenshots');
-const DEMO = { phone: '9000000001', password: 'demo-password-123' };
+const DEMO = { phone: demoAccount('owner').phone, password: DEMO_PASSWORD };
 
 const DEVICES = {
   mobile: {

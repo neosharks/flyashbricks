@@ -13,6 +13,8 @@
 #   flyashbricks update v0.3.0        # a specific one
 #   flyashbricks run create-organization --org "X" --name "Y" --phone 98…
 #   flyashbricks run backup-restore --file backup.fabk
+#   flyashbricks run seed --force-demo   # demo server only: a demo company whose
+#                                        # sign-ins DEMO_LOGINS=true lists on the login screen
 #
 # The app is reached through a Cloudflare Tunnel (or another HTTPS proxy)
 # pointed at http://<this machine>:3000; it does not terminate HTTPS itself.

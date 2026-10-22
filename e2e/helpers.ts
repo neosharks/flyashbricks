@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test';
+import { DEMO_PASSWORD, demoAccount } from '../features/auth/demo-accounts';
 
 /** Accounts created by `pnpm db:seed` (demo data only — the seed refuses production). */
 export const DEMO = {
-  admin: { phone: '9000000001', password: 'demo-password-123' },
-  supervisor: { phone: '9000000002', password: 'demo-password-123' },
+  admin: { phone: demoAccount('owner').phone, password: DEMO_PASSWORD },
+  supervisor: { phone: demoAccount('supervisor').phone, password: DEMO_PASSWORD },
 } as const;
 
 export const ADMIN_STATE = '.playwright/admin.json';

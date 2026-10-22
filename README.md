@@ -27,9 +27,10 @@ pnpm setup                    # sync indexes, seed a demo company
 pnpm dev                      # http://localhost:3000
 ```
 
-The seed creates a demo company in Uttar Pradesh with materials, production, sales, staff
-and attendance, and prints the demo logins. Change those passwords before showing the app
-to anyone. Already using
+The seed creates a demo company in Uttar Pradesh with three months of materials,
+production, sales, staff and attendance (`--days N` for another span), and one sign-in per
+kind of access (`features/auth/demo-accounts.ts`). With `DEMO_LOGINS=true` the login screen
+lists them, password included — set it only on a demo server. Already using
 ports 27017/6379? Set `MONGO_PORT` / `REDIS_PORT` in `.env` and point `MONGODB_URI` /
 `REDIS_URL` at them.
 

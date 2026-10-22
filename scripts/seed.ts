@@ -1,20 +1,21 @@
 /**
- * Demo data: one company with a month of realistic activity, written through
- * the same service functions the app uses, so every balance, ledger row,
- * invoice number and audit entry is exactly what real use would produce.
+ * Demo data: one company with three months of realistic activity, written
+ * through the same service functions the app uses, so every balance, ledger
+ * row, invoice number and audit entry is exactly what real use would produce.
  *
- * Synthetic only. Refuses to run with NODE_ENV=production, and against any
- * database that is not on this machine or the local Docker network unless
- * `--force-demo` is passed — a demo admin with a published password must
- * never land in a real company's database.
+ * Synthetic only. Refuses to run with NODE_ENV=production, or against any
+ * database that is not on this machine or the local Docker network, unless
+ * `--force-demo` is passed — the demo sign-ins have a published password
+ * (features/auth/demo-accounts.ts), so this is for a demo server only. The
+ * demo company is its own organisation; nothing of another one is touched.
  *
- * Usage: pnpm db:seed [--force-demo]
+ * Usage: pnpm db:seed [--days 90] [--force-demo]
  */
 import { parseArgs } from 'node:util';
 import { connectDb, disconnectDb } from '../lib/db';
 import { hashPassword } from '../lib/password';
 import { addDays, DEFAULT_TIMEZONE, todayKey } from '../lib/dates';
-import { NO_ACCESS, type Permissions, type SessionUser } from '../lib/permissions';
+import type { SessionUser } from '../lib/permissions';
 import { defaultPrefs } from '../features/notifications/prefs';
 import { nextAvatarVariant } from '../features/people/avatar';
 import { Organization } from '../models/organization';
@@ -38,10 +39,15 @@ import {
   StaffPaymentSchema,
 } from '../features/staff/schema';
 import { createStaff, markAttendance, recordStaffPayment } from '../features/staff/service';
-import type { Gender, MaterialKind, Unit } from '../models/constants';
+import type { MaterialKind, Unit } from '../models/constants';
+import {
+  DEMO_ACCOUNTS,
+  DEMO_PASSWORD,
+  demoAccount,
+  type DemoAccount,
+} from '../features/auth/demo-accounts';
 
-const DEMO_PASSWORD = 'demo-password-123';
-const DAYS = 30;
+const DEFAULT_DAYS = 90;
 const TZ = DEFAULT_TIMEZONE;
 
 /** Deterministic pseudo-random numbers, so every seed produces the same month. */
@@ -52,23 +58,15 @@ function random(): number {
 }
 const between = (min: number, max: number) => Math.round(min + random() * (max - min));
 
-async function createUser(
-  orgId: string,
-  name: string,
-  nameHi: string,
-  phone: string,
-  role: 'admin' | 'employee',
-  permissions: Permissions,
-  gender: Gender,
-  extra: { email?: string; jobTitle?: string } = {},
-): Promise<SessionUser> {
+async function createUser(orgId: string, account: DemoAccount): Promise<SessionUser> {
+  const { name, nameHi, phone, role, permissions, gender } = account;
   const user = await User.create({
     orgId,
     name,
     nameHi,
     phone,
-    email: extra.email ?? null,
-    jobTitle: extra.jobTitle ?? null,
+    email: account.email ?? null,
+    jobTitle: account.jobTitle,
     passwordHash: await hashPassword(DEMO_PASSWORD),
     role,
     permissions,
@@ -139,20 +137,28 @@ const MATERIALS: {
 ];
 
 /** Truckloads that arrive when stock runs down: quantity and price per unit in rupees. */
-const RESTOCK: Record<string, { qty: number; rate: number; supplier: string }> = {
-  'Fly ash': { qty: 40, rate: 650, supplier: 'NTPC Dadri' },
-  'Stone dust': { qty: 20, rate: 900, supplier: 'Balaji Crushers' },
-  'Cement (OPC 43)': { qty: 200, rate: 345, supplier: 'Shree Cement Dealer' },
+const RESTOCK: Record<
+  string,
+  { qty: number; rate: number; supplier: string; dailyUseMilli: number }
+> = {
+  'Fly ash': { qty: 40, rate: 650, supplier: 'NTPC Dadri', dailyUseMilli: 15_000 },
+  'Stone dust': { qty: 20, rate: 900, supplier: 'Balaji Crushers', dailyUseMilli: 7_500 },
+  'Cement (OPC 43)': {
+    qty: 200,
+    rate: 345,
+    supplier: 'Shree Cement Dealer',
+    dailyUseMilli: 55_000,
+  },
 };
 
-/** Mostly local (Uttar Pradesh) buyers, and one across the border for an IGST bill. */
+/** Mostly local (Uttar Pradesh) buyers, and a few across the border for IGST bills. */
 const CUSTOMERS: {
   name: string;
   nameHi: string;
   phone: string;
   city: string;
   cityHi: string;
-  stateCode: '09' | '08';
+  stateCode: '09' | '08' | '06' | '07';
   gstin?: string;
 }[] = [
   {
@@ -236,6 +242,123 @@ const CUSTOMERS: {
     cityHi: 'मुरादनगर',
     stateCode: '09',
   },
+  {
+    name: 'Bansal Homes',
+    nameHi: 'बंसल होम्स',
+    phone: '9818112345',
+    city: 'Ghaziabad',
+    cityHi: 'ग़ाज़ियाबाद',
+    stateCode: '09',
+    gstin: '09BANSL1234H1ZI',
+  },
+  {
+    name: 'Naresh Chauhan',
+    nameHi: 'नरेश चौहान',
+    phone: '9456123456',
+    city: 'Sikandrabad',
+    cityHi: 'सिकंदराबाद',
+    stateCode: '09',
+  },
+  {
+    name: 'Tyagi Buildcon',
+    nameHi: 'त्यागी बिल्डकॉन',
+    phone: '9837134567',
+    city: 'Meerut',
+    cityHi: 'मेरठ',
+    stateCode: '09',
+    gstin: '09TYAGI5678B1ZG',
+  },
+  {
+    name: 'Rakesh Gurjar',
+    nameHi: 'राकेश गुर्जर',
+    phone: '9759145678',
+    city: 'Dankaur',
+    cityHi: 'दनकौर',
+    stateCode: '09',
+  },
+  {
+    name: 'Om Sai Constructions',
+    nameHi: 'ओम साई कंस्ट्रक्शंस',
+    phone: '9873156789',
+    city: 'Noida',
+    cityHi: 'नोएडा',
+    stateCode: '09',
+  },
+  {
+    name: 'Sanjay Bhati',
+    nameHi: 'संजय भाटी',
+    phone: '9910167890',
+    city: 'Greater Noida',
+    cityHi: 'ग्रेटर नोएडा',
+    stateCode: '09',
+  },
+  {
+    name: 'Jindal Realty (Faridabad)',
+    nameHi: 'जिंदल रियल्टी (फ़रीदाबाद)',
+    phone: '9811178901',
+    city: 'Faridabad',
+    cityHi: 'फ़रीदाबाद',
+    stateCode: '06',
+    gstin: '06JINDL4321R1Z7',
+  },
+  {
+    name: 'Ashok Kumar Mistri',
+    nameHi: 'अशोक कुमार मिस्त्री',
+    phone: '9568189012',
+    city: 'Hapur',
+    cityHi: 'हापुड़',
+    stateCode: '09',
+  },
+  {
+    name: 'Gram Panchayat Bhojpur',
+    nameHi: 'ग्राम पंचायत भोजपुर',
+    phone: '9412190123',
+    city: 'Bhojpur',
+    cityHi: 'भोजपुर',
+    stateCode: '09',
+  },
+  {
+    name: 'Mittal Traders',
+    nameHi: 'मित्तल ट्रेडर्स',
+    phone: '9837201234',
+    city: 'Bulandshahr',
+    cityHi: 'बुलंदशहर',
+    stateCode: '09',
+    gstin: '09MITTL8765T1Z3',
+  },
+  {
+    name: 'Vinod Nagar',
+    nameHi: 'विनोद नागर',
+    phone: '9761212345',
+    city: 'Dadri',
+    cityHi: 'दादरी',
+    stateCode: '09',
+  },
+  {
+    name: 'Saraswati Shiksha Trust',
+    nameHi: 'सरस्वती शिक्षा ट्रस्ट',
+    phone: '9997223456',
+    city: 'Modinagar',
+    cityHi: 'मोदीनगर',
+    stateCode: '09',
+  },
+  {
+    name: 'Imran Qureshi',
+    nameHi: 'इमरान क़ुरैशी',
+    phone: '9719234567',
+    city: 'Muradnagar',
+    cityHi: 'मुरादनगर',
+    stateCode: '09',
+  },
+  {
+    name: 'Delhi Metro Housing (Delhi)',
+    nameHi: 'दिल्ली मेट्रो हाउसिंग (दिल्ली)',
+    phone: '9899245678',
+    city: 'New Delhi',
+    cityHi: 'नई दिल्ली',
+    stateCode: '07',
+    gstin: '07DMHPL2468D1Z1',
+  },
 ];
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1', 'mongo']);
@@ -250,11 +373,76 @@ function isLocalDatabase(uri: string): boolean {
   });
 }
 
-async function main(): Promise<void> {
-  const { values } = parseArgs({ options: { 'force-demo': { type: 'boolean', default: false } } });
+/** The yard's people. Most never sign in: they exist for attendance and pay. */
+const WORKERS = [
+  {
+    name: 'Ramesh Pal',
+    role: 'moulder',
+    gender: 'male',
+    wageType: 'per_thousand_bricks',
+    rate: '450',
+  },
+  {
+    name: 'Suresh Kumar',
+    role: 'moulder',
+    gender: 'male',
+    wageType: 'per_thousand_bricks',
+    rate: '450',
+  },
+  {
+    name: 'Bablu Prajapati',
+    role: 'moulder',
+    gender: 'male',
+    wageType: 'per_thousand_bricks',
+    rate: '450',
+  },
+  {
+    name: 'Lakhan Singh',
+    role: 'moulder',
+    gender: 'male',
+    wageType: 'per_thousand_bricks',
+    rate: '475',
+  },
+  { name: 'Sunita Devi', role: 'labour', gender: 'female', wageType: 'daily', rate: '400' },
+  { name: 'Geeta Devi', role: 'labour', gender: 'female', wageType: 'daily', rate: '400' },
+  { name: 'Kamla Devi', role: 'labour', gender: 'female', wageType: 'daily', rate: '400' },
+  { name: 'Pappu Kumar', role: 'labour', gender: 'male', wageType: 'daily', rate: '420' },
+  { name: 'Mohan Lal', role: 'machine_operator', gender: 'male', wageType: 'daily', rate: '650' },
+  {
+    name: 'Devendra Rana',
+    role: 'machine_operator',
+    gender: 'male',
+    wageType: 'daily',
+    rate: '650',
+  },
+  { name: 'Raju Yadav', role: 'loader', gender: 'male', wageType: 'daily', rate: '450' },
+  { name: 'Shankar Lal', role: 'loader', gender: 'male', wageType: 'daily', rate: '450' },
+  { name: 'Salim Khan', role: 'driver', gender: 'male', wageType: 'monthly', rate: '18000' },
+  { name: 'Gurpreet Singh', role: 'driver', gender: 'male', wageType: 'monthly', rate: '18000' },
+  { name: 'Anil Sharma', role: 'supervisor', gender: 'male', wageType: 'monthly', rate: '25000' },
+  { name: 'Neha Verma', role: 'office', gender: 'female', wageType: 'monthly', rate: '16000' },
+] as const;
 
-  if (process.env.NODE_ENV === 'production') {
-    console.error('Refusing to seed demo data into a production environment.');
+const weekdayOf = (day: string) => new Date(`${day}T12:00:00Z`).getUTCDay();
+
+async function main(): Promise<void> {
+  const { values } = parseArgs({
+    options: {
+      'force-demo': { type: 'boolean', default: false },
+      days: { type: 'string', default: String(DEFAULT_DAYS) },
+    },
+  });
+  const days = Number(values.days);
+  if (!Number.isInteger(days) || days < 7 || days > 366) {
+    console.error('--days must be a whole number from 7 to 366.');
+    process.exitCode = 1;
+    return;
+  }
+
+  if (process.env.NODE_ENV === 'production' && !values['force-demo']) {
+    console.error(
+      'Refusing to seed demo data into a production environment. Pass --force-demo if this is a demo server.',
+    );
     process.exitCode = 1;
     return;
   }
@@ -268,13 +456,19 @@ async function main(): Promise<void> {
 
   await connectDb();
   try {
-    if (await User.exists({ phone: '9000000001' })) {
-      console.log('Demo data is already there (admin 9000000001). Nothing to do.');
+    const taken = await User.find({ phone: { $in: DEMO_ACCOUNTS.map(({ phone }) => phone) } })
+      .select('phone')
+      .lean();
+    if (taken.length > 0) {
+      console.log(
+        `Demo data is already there (${taken.map(({ phone }) => phone).join(', ')}). Nothing to do.`,
+      );
       return;
     }
 
     const today = todayKey(TZ);
-    const start = addDays(today, -DAYS);
+    const start = addDays(today, -days);
+    const owner = demoAccount('owner');
 
     const org = await Organization.create({
       name: 'Shree Ganesh Fly Ash Bricks',
@@ -284,7 +478,7 @@ async function main(): Promise<void> {
       city: 'Ghaziabad',
       pincode: '201009',
       stateCode: '09',
-      phone: '9000000001',
+      phone: owner.phone,
       gstin: '09ABCDE1234F1ZY',
       gstRateBps: 500,
       hsnCode: '6815',
@@ -300,39 +494,12 @@ async function main(): Promise<void> {
     });
     const orgId = org._id.toString();
 
-    const admin = await createUser(
-      orgId,
-      'Vikram Singh',
-      'विक्रम सिंह',
-      '9000000001',
-      'admin',
-      NO_ACCESS,
-      'male',
-      {
-        jobTitle: 'Owner',
-        email: 'owner@example.com',
-      },
-    );
-    const supervisor = await createUser(
-      orgId,
-      'Rajesh Sharma',
-      'राजेश शर्मा',
-      '9000000002',
-      'employee',
-      { ...NO_ACCESS, rawMaterials: 'write', production: 'write' },
-      'male',
-      { jobTitle: 'Plant supervisor' },
-    );
-    const clerk = await createUser(
-      orgId,
-      'Pooja Saini',
-      'पूजा सैनी',
-      '9000000003',
-      'employee',
-      { ...NO_ACCESS, sales: 'write', production: 'read' },
-      'female',
-      { jobTitle: 'Sales & accounts' },
-    );
+    const admin = await createUser(orgId, owner);
+    const supervisor = await createUser(orgId, demoAccount('supervisor'));
+    const clerk = await createUser(orgId, demoAccount('sales'));
+    const munshi = await createUser(orgId, demoAccount('munshi'));
+    // The partner only looks; nothing is written in their name.
+    await createUser(orgId, demoAccount('viewer'));
 
     console.log('→ raw materials');
     const materialIds = new Map<string, string>();
@@ -350,7 +517,7 @@ async function main(): Promise<void> {
       materialIds.set(material.name, await createMaterial(supervisor, input, TZ, start));
     }
 
-    console.log('→ brick type');
+    console.log('→ brick types');
     // Per 1,000 bricks of ~2.5 kg: 60% fly ash, 30% stone dust, 10% cement (5 bags).
     const productId = await createProduct(
       admin,
@@ -369,6 +536,28 @@ async function main(): Promise<void> {
         isActive: 'on',
       }),
     );
+    // The stronger brick for load-bearing walls takes more cement and sells for more.
+    const strongProductId = await createProduct(
+      admin,
+      CreateProductSchema.parse({
+        name: 'Fly ash brick (Class 10)',
+        nameHi: 'फ्लाई ऐश ईंट (क्लास 10)',
+        size: '230 × 110 × 75 mm',
+        defaultRatePaise: '7.50',
+        recipeBatchSize: '1000',
+        recipe: [
+          { materialId: materialIds.get('Fly ash'), qtyMilli: '1.4' },
+          { materialId: materialIds.get('Stone dust'), qtyMilli: '0.8' },
+          { materialId: materialIds.get('Cement (OPC 43)'), qtyMilli: '7' },
+        ],
+        lowStockThreshold: '2000',
+        isActive: 'on',
+      }),
+    );
+    const products = [
+      { id: productId, rate: 6.5, share: 0.88 },
+      { id: strongProductId, rate: 7.5, share: 1 },
+    ];
 
     console.log('→ customers');
     const customerIds: string[] = [];
@@ -388,11 +577,11 @@ async function main(): Promise<void> {
       customerIds.push(created._id.toString());
     }
 
-    console.log(`→ ${DAYS} days of purchases, production, sales and payments`);
+    console.log(`→ ${days} days of purchases, production, sales and payments`);
     const openSales: string[] = [];
     let salesCount = 0;
 
-    for (let offset = DAYS; offset >= 0; offset -= 1) {
+    for (let offset = days; offset >= 0; offset -= 1) {
       const day = addDays(today, -offset);
 
       // A truck arrives before a material drops to its low mark, as in a
@@ -401,8 +590,10 @@ async function main(): Promise<void> {
       for (const [name, restock] of Object.entries(RESTOCK)) {
         if (name.startsWith('Cement') && offset < 4) continue;
         const material = await RawMaterial.findById(materialIds.get(name)).lean();
-        const dailyUse = name === 'Fly ash' ? 6_000 : name === 'Stone dust' ? 3_000 : 20_000;
-        if (material && material.quantityMilli < material.lowThresholdMilli + dailyUse * 2) {
+        if (
+          material &&
+          material.quantityMilli < material.lowThresholdMilli + restock.dailyUseMilli * 2
+        ) {
           await recordPurchase(
             supervisor,
             PurchaseSchema.parse({
@@ -418,36 +609,44 @@ async function main(): Promise<void> {
         }
       }
 
-      // Sundays the press is off.
-      const weekday = new Date(`${day}T12:00:00Z`).getUTCDay();
+      // Sundays the press is off. Class 10 runs on alternate days.
+      const weekday = weekdayOf(day);
       if (weekday !== 0) {
-        const made = between(3_200, 4_400);
-        const broken = Math.round(made * (0.015 + random() * 0.03));
-        try {
-          await logProduction(
-            supervisor,
-            LogProductionSchema.parse({
-              productId,
-              date: day,
-              goodQty: String(made - broken),
-              defectiveQty: String(broken),
-              note: '',
-            }),
-            TZ,
-            today,
-          );
-        } catch {
-          // Material ran out: no production that day, exactly as in a real yard.
+        const runs = [{ id: productId, made: between(6_000, 8_000) }];
+        if (weekday % 2 === 1) runs.push({ id: strongProductId, made: between(1_500, 2_500) });
+        for (const run of runs) {
+          const broken = Math.round(run.made * (0.015 + random() * 0.03));
+          try {
+            await logProduction(
+              supervisor,
+              LogProductionSchema.parse({
+                productId: run.id,
+                date: day,
+                goodQty: String(run.made - broken),
+                defectiveQty: String(broken),
+                note: '',
+              }),
+              TZ,
+              today,
+            );
+          } catch {
+            // Material ran out: no production that day, exactly as in a real yard.
+          }
         }
       }
 
-      // Up to two loads leave the yard on a working day.
-      const loads = weekday === 0 ? 0 : between(0, 2);
+      // Two to five loads leave the yard on a working day.
+      const loads = weekday === 0 ? 0 : between(2, 5);
       for (let load = 0; load < loads; load += 1) {
         const customerId = customerIds[between(0, customerIds.length - 1)] ?? customerIds[0];
-        const bricks = between(2, 5) * 500;
+        const pick = random();
+        const product = products.find(({ share }) => pick < share) ?? products[0];
+        if (!product) continue;
+        const bricks = between(3, 8) * 500;
+        // Regular buyers haggle a little off the list rate.
+        const rate = product.rate - (random() > 0.7 ? 0.25 : 0);
         const paysNow = random();
-        const totalGuess = Math.round(bricks * 6.5 * 1.05);
+        const totalGuess = Math.round(bricks * rate * 1.05);
         const payment =
           paysNow > 0.55 ? totalGuess : paysNow > 0.3 ? Math.round(totalGuess * 0.5) : 0;
         try {
@@ -457,7 +656,7 @@ async function main(): Promise<void> {
               customerMode: 'existing',
               customerId,
               date: day,
-              lines: [{ productId, qty: String(bricks), rate: '6.50' }],
+              lines: [{ productId: product.id, qty: String(bricks), rate: rate.toFixed(2) }],
               delivery: random() > 0.5 ? String(between(3, 8) * 100) : '',
               discount: '',
               vehicleNo: `UP14 AT ${between(1000, 9999)}`,
@@ -475,10 +674,11 @@ async function main(): Promise<void> {
         }
       }
 
-      // Older bills get paid off over time, the way contractors actually pay.
-      if (offset % 4 === 0) {
-        for (const saleId of openSales.splice(0, 3)) {
-          if (random() < 0.35) continue;
+      // Older bills get paid off over time, the way contractors actually pay;
+      // some stay due, so the dues screen has a real list.
+      if (offset % 3 === 0) {
+        for (const saleId of openSales.splice(0, 6)) {
+          if (random() < 0.3) continue;
           try {
             const sale = await Sale.findById(saleId).select('duePaise').lean();
             if (!sale || sale.duePaise <= 0) continue;
@@ -487,7 +687,7 @@ async function main(): Promise<void> {
               AddPaymentSchema.parse({
                 saleId,
                 amount: (sale.duePaise / 100).toFixed(2),
-                mode: 'bank',
+                mode: random() > 0.3 ? 'bank' : 'cheque',
                 date: day,
                 note: '',
               }),
@@ -501,42 +701,7 @@ async function main(): Promise<void> {
     }
 
     console.log('→ staff, attendance and wages');
-    // Most of the yard's people never sign in: they exist for attendance and pay.
-    const WORKERS = [
-      {
-        name: 'Ramesh Pal',
-        role: 'moulder',
-        gender: 'male',
-        wageType: 'per_thousand_bricks',
-        rate: '450',
-      },
-      {
-        name: 'Suresh Kumar',
-        role: 'moulder',
-        gender: 'male',
-        wageType: 'per_thousand_bricks',
-        rate: '450',
-      },
-      { name: 'Sunita Devi', role: 'labour', gender: 'female', wageType: 'daily', rate: '400' },
-      { name: 'Geeta Devi', role: 'labour', gender: 'female', wageType: 'daily', rate: '400' },
-      {
-        name: 'Mohan Lal',
-        role: 'machine_operator',
-        gender: 'male',
-        wageType: 'daily',
-        rate: '650',
-      },
-      { name: 'Raju Yadav', role: 'loader', gender: 'male', wageType: 'daily', rate: '450' },
-      { name: 'Salim Khan', role: 'driver', gender: 'male', wageType: 'monthly', rate: '18000' },
-      {
-        name: 'Anil Sharma',
-        role: 'supervisor',
-        gender: 'male',
-        wageType: 'monthly',
-        rate: '25000',
-      },
-    ] as const;
-    const workerIds: { id: string; wageType: string }[] = [];
+    const workerIds: { id: string; wageType: string; rate: number }[] = [];
     for (const worker of WORKERS) {
       const id = await createStaff(
         admin,
@@ -550,7 +715,7 @@ async function main(): Promise<void> {
           wageType: worker.wageType,
           wageRatePaise: worker.rate,
           overtimeRatePaise: worker.wageType === 'daily' ? '60' : '',
-          joinedOn: addDays(today, -DAYS - 60),
+          joinedOn: addDays(today, -days - 60),
           leftOn: '',
           isActive: 'on',
           userId: '',
@@ -559,23 +724,25 @@ async function main(): Promise<void> {
         }),
         TZ,
       );
-      workerIds.push({ id, wageType: worker.wageType });
+      workerIds.push({ id, wageType: worker.wageType, rate: Number(worker.rate) });
     }
 
-    for (let offset = DAYS; offset >= 0; offset -= 1) {
+    const ADVANCE_NOTES = ['Family function', 'Medical', 'School fees', 'Going home for harvest'];
+    for (let offset = days; offset >= 0; offset -= 1) {
       const day = addDays(today, -offset);
-      const sunday = new Date(`${day}T12:00:00Z`).getUTCDay() === 0;
+      const weekday = weekdayOf(day);
       const entries = workerIds.map(({ id, wageType }) => {
         const roll = random();
-        const status = sunday
-          ? 'holiday'
-          : roll < 0.08
-            ? 'absent'
-            : roll < 0.13
-              ? 'half_day'
-              : roll < 0.16
-                ? 'leave'
-                : 'present';
+        const status =
+          weekday === 0
+            ? 'holiday'
+            : roll < 0.08
+              ? 'absent'
+              : roll < 0.13
+                ? 'half_day'
+                : roll < 0.16
+                  ? 'leave'
+                  : 'present';
         const working = status === 'present' || status === 'half_day';
         return {
           staffId: id,
@@ -584,14 +751,13 @@ async function main(): Promise<void> {
           bricks: working && wageType === 'per_thousand_bricks' ? String(between(1400, 2000)) : '0',
         };
       });
-      await markAttendance(admin, AttendanceSheetSchema.parse({ date: day, entries }), TZ);
+      await markAttendance(munshi, AttendanceSheetSchema.parse({ date: day, entries }), TZ);
 
-      // Daily-wage and piece-rate people are paid every Saturday; one advance mid-month.
-      const saturday = new Date(`${day}T12:00:00Z`).getUTCDay() === 6;
+      // Daily-wage and piece-rate people are paid every Saturday.
       for (const { id, wageType } of workerIds) {
-        if (saturday && wageType !== 'monthly') {
+        if (weekday === 6 && wageType !== 'monthly') {
           await recordStaffPayment(
-            admin,
+            munshi,
             StaffPaymentSchema.parse({
               staffId: id,
               type: 'wage',
@@ -606,42 +772,48 @@ async function main(): Promise<void> {
           );
         }
       }
-      if (offset === 15) {
-        const borrower = workerIds[2];
+
+      // Salaries for the month just ended go out on the 1st.
+      if (day.endsWith('-01')) {
+        for (const { id, wageType, rate } of workerIds) {
+          if (wageType !== 'monthly') continue;
+          await recordStaffPayment(
+            admin,
+            StaffPaymentSchema.parse({
+              staffId: id,
+              type: 'wage',
+              amount: String(rate),
+              mode: 'bank',
+              date: day,
+              periodFrom: addDays(day, -30),
+              periodTo: addDays(day, -1),
+              note: 'Monthly salary',
+            }),
+            TZ,
+          );
+        }
+      }
+
+      // Now and then someone needs an advance.
+      if (weekday !== 0 && random() < 0.06) {
+        const borrower = workerIds[between(0, workerIds.length - 1)];
         if (borrower) {
           await recordStaffPayment(
             admin,
             StaffPaymentSchema.parse({
               staffId: borrower.id,
               type: 'advance',
-              amount: '2000',
+              amount: String(between(5, 30) * 100),
               mode: 'cash',
               date: day,
               periodFrom: '',
               periodTo: '',
-              note: 'Family function',
+              note: ADVANCE_NOTES[between(0, ADVANCE_NOTES.length - 1)] ?? '',
             }),
             TZ,
           );
         }
       }
-    }
-    for (const { id, wageType } of workerIds) {
-      if (wageType !== 'monthly') continue;
-      await recordStaffPayment(
-        admin,
-        StaffPaymentSchema.parse({
-          staffId: id,
-          type: 'wage',
-          amount: wageType === 'monthly' ? '15000' : '0',
-          mode: 'bank',
-          date: addDays(today, -DAYS + 1),
-          periodFrom: '',
-          periodTo: '',
-          note: 'Last month salary',
-        }),
-        TZ,
-      );
     }
 
     // Weeks of alerts would have been read by now; keep only the newest few unread.
@@ -655,11 +827,11 @@ async function main(): Promise<void> {
       { $set: { readAt: new Date() } },
     );
 
-    console.log(`\nSeeded "${org.name}" with ${salesCount} sales over ${DAYS} days.`);
-    console.log('Sign in with (password for all three):', DEMO_PASSWORD);
-    console.log('  9000000001  Vikram Singh   admin');
-    console.log('  9000000002  Rajesh Sharma  supervisor (raw materials + production)');
-    console.log('  9000000003  Pooja Saini    sales & accounts');
+    console.log(`\nSeeded "${org.name}" with ${salesCount} sales over ${days} days.`);
+    console.log(`Sign in with (password for all of them): ${DEMO_PASSWORD}`);
+    for (const account of DEMO_ACCOUNTS) {
+      console.log(`  ${account.phone}  ${account.name.padEnd(14)} ${account.jobTitle}`);
+    }
   } finally {
     await disconnectDb();
   }
