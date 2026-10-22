@@ -175,7 +175,10 @@ const ServerEnvSchema = z
         message: 'SMTP_URL is required when MAIL_TRANSPORT=smtp',
       });
     }
-  });
+  })
+  // A demo server prints an admin password on its login screen, so the app
+  // there takes no update requests; it is updated on the server itself.
+  .transform((value) => (value.DEMO_LOGINS ? { ...value, UPDATER_DIR: undefined } : value));
 
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;
 
