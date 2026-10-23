@@ -27,6 +27,7 @@ export const NAMESPACES = [
   'staff',
   'marketing',
   'system',
+  'quick',
 ] as const;
 
 export function isLocale(value: unknown): value is Locale {

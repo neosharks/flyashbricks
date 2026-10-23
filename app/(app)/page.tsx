@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getLocale, getTranslations } from 'next-intl/server';
 import {
   AlertOctagon,
@@ -21,6 +22,7 @@ import { BrickStack } from '@/components/charts/brick-stack';
 import { FactoryScene } from '@/components/illustrations';
 import { ActivityList } from '@/components/activity/activity-list';
 import { QuickActions, type QuickAction } from '@/components/dashboard/quick-actions';
+import { HomeModeSwitch } from '@/components/quick/home-mode-switch';
 import { ProductionChart } from '@/components/production/production-chart';
 import { MoneyColumnChart } from '@/components/sales/money-chart';
 import { Button } from '@/components/ui/button';
@@ -35,7 +37,8 @@ import { dailySales, periodStats } from '@/features/sales/queries';
 import { customerStats, listCustomers } from '@/features/customers/queries';
 import { listActivity } from '@/features/activity/queries';
 import { shouldOfferDevicePin } from '@/features/auth/device-pin';
-import { DEVICE_COOKIE_NAME, PIN_OFFER_COOKIE_NAME } from '@/lib/cookies';
+import { opensInSimpleMode, quickTasksFor } from '@/features/quick/tasks';
+import { DEVICE_COOKIE_NAME, HOME_MODE_COOKIE_NAME, PIN_OFFER_COOKIE_NAME } from '@/lib/cookies';
 import { formatMoney, formatMoneyCompact } from '@/lib/money';
 import { getOrgTimezone } from '@/lib/org';
 import { can, type SessionUser } from '@/lib/permissions';
@@ -126,9 +129,13 @@ async function offerPin(user: SessionUser): Promise<boolean> {
 
 export default async function DashboardPage() {
   const user = await requireUserPage('/');
+  if (opensInSimpleMode(user, (await cookies()).get(HOME_MODE_COOKIE_NAME)?.value)) {
+    redirect('/quick');
+  }
   const timezone = await getOrgTimezone(user.orgId);
-  const [t, tm, tu, locale, data, pinOffer] = await Promise.all([
+  const [t, tq, tm, tu, locale, data, pinOffer] = await Promise.all([
     getTranslations('dashboard'),
+    getTranslations('quick'),
     getTranslations('rawMaterials'),
     getTranslations('common'),
     getLocale(),
@@ -202,11 +209,16 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <p className="text-foreground-muted text-sm">{today}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t('greeting', { name: firstName })}
-        </h1>
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-foreground-muted text-sm">{today}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t('greeting', { name: firstName })}
+          </h1>
+        </div>
+        {quickTasksFor(user).length > 0 && (
+          <HomeModeSwitch to="simple" label={tq('home.simpleMode')} />
+        )}
       </header>
 
       {pinOffer && <PinOffer />}

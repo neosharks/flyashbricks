@@ -1,0 +1,152 @@
+{
+  "back": "पीछे",
+  "close": "बंद करें",
+  "stepOf": "चरण {step} / {steps}",
+  "next": "आगे",
+  "save": "सेव करें",
+  "saving": "सेव हो रहा है…",
+  "checkAndSave": "जाँचें और सेव करें",
+  "day": "दिन",
+  "today": "आज",
+  "backHome": "मेरे कामों पर वापस",
+  "askAdmin": "अपने एडमिन से इसे पूरे ऐप में सेट करने को कहें।",
+  "pad": {
+    "keypad": "नंबर बटन",
+    "erase": "आख़िरी अंक मिटाएँ"
+  },
+  "home": {
+    "greeting": "नमस्ते, {name}",
+    "subtitle": "आप क्या करना चाहते हैं?",
+    "madeToday": "आज बनीं",
+    "soldToday": "आज की बिक्री",
+    "nothing": "यहाँ आपके लिए भरने को कुछ नहीं है। एडमिन से अनुमति माँगें।",
+    "fullApp": "पूरा ऐप खोलें",
+    "simpleMode": "आसान मोड"
+  },
+  "tasks": {
+    "production": {
+      "title": "ईंटें बनीं",
+      "hint": "आज की अच्छी और टूटी ईंटें जोड़ें"
+    },
+    "sale": {
+      "title": "नई बिक्री",
+      "hint": "ईंटें बाहर गईं, बिल के साथ"
+    },
+    "payment": {
+      "title": "पैसा मिला",
+      "hint": "ग्राहक ने किसी बिल का पैसा दिया"
+    },
+    "attendance": {
+      "title": "हाज़िरी",
+      "hint": "आज कौन काम पर आया"
+    },
+    "purchase": {
+      "title": "माल आया",
+      "hint": "फ्लाई ऐश, सीमेंट या चूरा आया"
+    }
+  },
+  "production": {
+    "noProducts": "अभी कोई ईंट का प्रकार नहीं है",
+    "done": "ईंटें सेव हो गईं",
+    "doneDetail": "{good} अच्छी और {broken} टूटी {name} आज में जुड़ गईं।",
+    "again": "और ईंटें जोड़ें",
+    "which": "कौन सी ईंटें बनीं?",
+    "howManyGood": "कितनी अच्छी ईंटें बनीं?",
+    "goodOf": "अच्छी ईंटें · {name}",
+    "good": "अच्छी ईंटें",
+    "howManyBroken": "कितनी टूटीं?",
+    "broken": "टूटी ईंटें",
+    "none": "कोई नहीं",
+    "noneBroken": "कोई नहीं टूटी — आगे",
+    "brickType": "ईंट का प्रकार",
+    "materialUsed": "इसमें लगने वाला माल",
+    "short": "संख्या जाँचें, या पहले आया माल दर्ज करें।"
+  },
+  "sale": {
+    "noProducts": "अभी बेचने को ईंटें नहीं हैं",
+    "done": "बिक्री सेव हो गई",
+    "doneDetail": "{bricks} ईंटें {name} को · {total}",
+    "again": "नई बिक्री",
+    "openBill": "बिल खोलें",
+    "who": "कौन ख़रीद रहा है?",
+    "which": "कौन सी ईंटें?",
+    "inYard": "यार्ड में {count}",
+    "perBrick": "{rate} प्रति ईंट",
+    "howMany": "कितनी ईंटें?",
+    "bricks": "ईंटें",
+    "notEnough": "यार्ड में इतनी ईंटें नहीं हैं",
+    "rate": "प्रति ईंट दाम",
+    "changeRate": "बदलें",
+    "paidHowMuch": "बिल {total} का है। अभी कितना मिला?",
+    "paidFull": "पूरा पैसा मिला",
+    "paidPart": "कुछ पैसा मिला",
+    "paidPartHint": "मिली रक़म भरें",
+    "paidLater": "बाद में देंगे",
+    "paidLaterHint": "पूरे {total} बाक़ी रहेंगे",
+    "amountPaid": "मिली रक़म",
+    "stillDue": "बाक़ी: {due}",
+    "how": "पैसा कैसे मिला?",
+    "save": "बिक्री सेव करें",
+    "customer": "ग्राहक",
+    "total": "बिल की रक़म",
+    "received": "अभी मिला",
+    "due": "बाक़ी",
+    "newCustomer": "नया ग्राहक",
+    "newCustomerHint": "पहली बार ख़रीद रहे हैं",
+    "searching": "ढूँढ रहे हैं…",
+    "search": "नाम या फ़ोन",
+    "recent": "हाल के ग्राहक",
+    "noMatches": "कोई नहीं मिला",
+    "owes": "{amount} बाक़ी",
+    "newName": "ग्राहक का नाम",
+    "newPhone": "फ़ोन नंबर",
+    "pickExisting": "पुराना ग्राहक चुनें",
+    "partTooMuch": "यह पूरा बिल या उससे ज़्यादा है — \"पूरा पैसा मिला\" चुनें"
+  },
+  "payment": {
+    "whichBill": "{name} ने कौन से बिल का पैसा दिया?",
+    "owesTotal": "कुल {amount} बाक़ी",
+    "noBills": "कोई बिल बाक़ी नहीं है।",
+    "who": "किसने पैसा दिया?",
+    "nobodyOwes": "अभी किसी पर कुछ बाक़ी नहीं है।",
+    "done": "पैसा सेव हो गया",
+    "doneDetail": "{name} से {amount} मिले।",
+    "again": "एक और भुगतान",
+    "howMuch": "{name} ने कितना दिया?",
+    "save": "{amount} सेव करें",
+    "amount": "बिल {bill} के लिए रक़म",
+    "full": "पूरा {amount}",
+    "due": "इस बिल पर बाक़ी: {amount}",
+    "tooMuch": "इस बिल के बाक़ी से ज़्यादा है",
+    "how": "पैसा कैसे मिला?",
+    "alreadyPaid": "बिल {bill} का पूरा पैसा मिल चुका है"
+  },
+  "attendance": {
+    "done": "हाज़िरी सेव हो गई",
+    "doneDetail": "{count, plural, one {# व्यक्ति} other {# लोग}} दर्ज, {present} हाज़िर।",
+    "again": "आज की हाज़िरी बदलें",
+    "nobody": "अभी कोई कर्मचारी नहीं है",
+    "who": "आज कौन आया?",
+    "saveSome": "{count} सेव करें · {left} बाक़ी",
+    "save": "सभी {count} सेव करें",
+    "allPresent": "बाक़ी सब हाज़िर ({count})",
+    "bricks": "बनाई गई ईंटें"
+  },
+  "purchase": {
+    "noMaterials": "अभी कोई माल नहीं है",
+    "done": "माल सेव हो गया",
+    "doneDetail": "{qty} {unit} {name} स्टॉक में जुड़ गया।",
+    "again": "एक और गाड़ी",
+    "which": "क्या आया?",
+    "inStock": "स्टॉक में {qty} {unit}",
+    "howMuch": "कितना {name}?",
+    "quantity": "मात्रा",
+    "bill": "बिल कितने का था?",
+    "noBill": "अभी बिल नहीं — आगे",
+    "billAmount": "बिल की रक़म",
+    "material": "माल",
+    "noBillShort": "नहीं भरा",
+    "supplier": "किसने भेजा (ज़रूरी नहीं)",
+    "supplierHint": "सप्लायर या गाड़ी वाला"
+  }
+}

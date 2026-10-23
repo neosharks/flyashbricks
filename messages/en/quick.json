@@ -1,0 +1,152 @@
+{
+  "back": "Back",
+  "close": "Close",
+  "stepOf": "Step {step} of {steps}",
+  "next": "Next",
+  "save": "Save",
+  "saving": "Saving…",
+  "checkAndSave": "Check and save",
+  "day": "Day",
+  "today": "Today",
+  "backHome": "Back to my tasks",
+  "askAdmin": "Ask your admin to set this up in the full app.",
+  "pad": {
+    "keypad": "Number keys",
+    "erase": "Erase last digit"
+  },
+  "home": {
+    "greeting": "Namaste, {name}",
+    "subtitle": "What do you want to do?",
+    "madeToday": "Made today",
+    "soldToday": "Sold today",
+    "nothing": "There is nothing for you to enter here. Ask your admin for access.",
+    "fullApp": "Open the full app",
+    "simpleMode": "Simple mode"
+  },
+  "tasks": {
+    "production": {
+      "title": "Bricks made",
+      "hint": "Add today's good and broken bricks"
+    },
+    "sale": {
+      "title": "New sale",
+      "hint": "Bricks going out, with the bill"
+    },
+    "payment": {
+      "title": "Payment received",
+      "hint": "Money a customer paid for a bill"
+    },
+    "attendance": {
+      "title": "Attendance",
+      "hint": "Who came to work today"
+    },
+    "purchase": {
+      "title": "Material arrived",
+      "hint": "Fly ash, cement or dust delivered"
+    }
+  },
+  "production": {
+    "noProducts": "No brick types yet",
+    "done": "Bricks saved",
+    "doneDetail": "{good} good and {broken} broken {name} added to today.",
+    "again": "Add more bricks",
+    "which": "Which bricks were made?",
+    "howManyGood": "How many good bricks?",
+    "goodOf": "Good bricks · {name}",
+    "good": "Good bricks",
+    "howManyBroken": "How many broke?",
+    "broken": "Broken bricks",
+    "none": "None",
+    "noneBroken": "None broke — next",
+    "brickType": "Brick type",
+    "materialUsed": "Material this will use",
+    "short": "Check the number, or record the material that arrived first."
+  },
+  "sale": {
+    "noProducts": "No bricks to sell yet",
+    "done": "Sale saved",
+    "doneDetail": "{bricks} bricks to {name} · {total}",
+    "again": "New sale",
+    "openBill": "Open the bill",
+    "who": "Who is buying?",
+    "which": "Which bricks?",
+    "inYard": "{count} in the yard",
+    "perBrick": "{rate} each",
+    "howMany": "How many bricks?",
+    "bricks": "Bricks",
+    "notEnough": "Not that many in the yard",
+    "rate": "Price per brick",
+    "changeRate": "Change",
+    "paidHowMuch": "Bill is {total}. What was paid now?",
+    "paidFull": "Paid in full",
+    "paidPart": "Paid some",
+    "paidPartHint": "Enter the amount received",
+    "paidLater": "Will pay later",
+    "paidLaterHint": "All {total} stays due",
+    "amountPaid": "Amount received",
+    "stillDue": "Still due: {due}",
+    "how": "How was it paid?",
+    "save": "Save sale",
+    "customer": "Customer",
+    "total": "Bill total",
+    "received": "Received now",
+    "due": "Still due",
+    "newCustomer": "New customer",
+    "newCustomerHint": "First time buying",
+    "searching": "Searching…",
+    "search": "Name or phone",
+    "recent": "Recent customers",
+    "noMatches": "Nobody found",
+    "owes": "owes {amount}",
+    "newName": "Customer name",
+    "newPhone": "Phone number",
+    "pickExisting": "Pick an existing customer instead",
+    "partTooMuch": "That is the whole bill or more — choose \"Paid in full\""
+  },
+  "payment": {
+    "whichBill": "Which bill did {name} pay?",
+    "owesTotal": "Owes {amount} in all",
+    "noBills": "No bill is due.",
+    "who": "Who paid?",
+    "nobodyOwes": "Nobody owes anything right now.",
+    "done": "Payment saved",
+    "doneDetail": "{amount} received from {name}.",
+    "again": "Another payment",
+    "howMuch": "How much did {name} pay?",
+    "save": "Save {amount}",
+    "amount": "Amount for bill {bill}",
+    "full": "Full {amount}",
+    "due": "Due on this bill: {amount}",
+    "tooMuch": "More than is due on this bill",
+    "how": "How was it paid?",
+    "alreadyPaid": "Bill {bill} is fully paid"
+  },
+  "attendance": {
+    "done": "Attendance saved",
+    "doneDetail": "{count, plural, one {# person} other {# people}} marked, {present} present.",
+    "again": "Change today's attendance",
+    "nobody": "No workers yet",
+    "who": "Who came today?",
+    "saveSome": "Save {count} · {left} not marked",
+    "save": "Save all {count}",
+    "allPresent": "Everyone else present ({count})",
+    "bricks": "Bricks moulded"
+  },
+  "purchase": {
+    "noMaterials": "No materials yet",
+    "done": "Material saved",
+    "doneDetail": "{qty} {unit} of {name} added to stock.",
+    "again": "Another delivery",
+    "which": "What arrived?",
+    "inStock": "{qty} {unit} in stock",
+    "howMuch": "How much {name}?",
+    "quantity": "Quantity",
+    "bill": "How much was the bill?",
+    "noBill": "No bill yet — next",
+    "billAmount": "Bill amount",
+    "material": "Material",
+    "noBillShort": "Not entered",
+    "supplier": "Sent by (optional)",
+    "supplierHint": "Supplier or truck owner"
+  }
+}

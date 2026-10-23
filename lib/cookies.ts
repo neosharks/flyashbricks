@@ -31,3 +31,6 @@ export const DEVICE_COOKIE_OPTIONS = {
 
 /** Set by a password sign-in so the dashboard can offer a PIN once; holds only `1`. */
 export const PIN_OFFER_COOKIE_NAME = 'flyash.pin-offer';
+
+/** `simple` or `full`: which home this device opens on (features/quick/tasks.ts). */
+export const HOME_MODE_COOKIE_NAME = 'flyash.home';

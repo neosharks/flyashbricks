@@ -18,6 +18,7 @@ import type charts from './messages/en/charts.json';
 import type staff from './messages/en/staff.json';
 import type marketing from './messages/en/marketing.json';
 import type system from './messages/en/system.json';
+import type quick from './messages/en/quick.json';
 
 /** English is the reference: a key missing from it is a type error at the call site. */
 declare module 'next-intl' {
@@ -43,6 +44,7 @@ declare module 'next-intl' {
       staff: typeof staff;
       marketing: typeof marketing;
       system: typeof system;
+      quick: typeof quick;
     };
   }
 }
