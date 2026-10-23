@@ -160,5 +160,10 @@
     "preview": "Preview: 2,500 bricks sold to Ramesh Kumar for ₹16,250. — 2,500 ईंटें रमेश कुमार को ₹16,250 में बेचीं।"
   },
   "credit": "Built with <heart></heart> by <link>NeoSharks</link>",
-  "creditHeart": "love"
+  "creditHeart": "love",
+  "panel": {
+    "openFull": "Open full page",
+    "close": "Close",
+    "missing": "This record is not available any more."
+  }
 }

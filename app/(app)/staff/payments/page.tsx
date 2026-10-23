@@ -1,3 +1,4 @@
+import { ClickableRow } from '@/components/ui/clickable-row';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -31,7 +32,6 @@ import {
   TD,
   TH,
   THead,
-  TR,
 } from '@/components/ui/data-table';
 import { PaymentsChart } from '@/components/staff/payments-chart';
 import { PaymentsPeriod } from '@/components/staff/payments-period';
@@ -556,7 +556,11 @@ export default async function StaffPaymentsPage({
             </THead>
             <TBody>
               {page.rows.map((row) => (
-                <TR key={row.id} className={cn(row.voided && 'text-foreground-subtle')}>
+                <ClickableRow
+                  key={row.id}
+                  href={`/staff/${row.staffId}`}
+                  className={cn(row.voided && 'text-foreground-subtle')}
+                >
                   <TD muted className="whitespace-nowrap">
                     {formatDate(`${row.paidOn}T00:00:00Z`, locale, 'UTC')}
                   </TD>
@@ -601,7 +605,7 @@ export default async function StaffPaymentsPage({
                   </TD>
                   <TD muted>{t(`payment.modes.${row.mode}`)}</TD>
                   <TD muted>{row.recordedByName}</TD>
-                </TR>
+                </ClickableRow>
               ))}
             </TBody>
           </Table>

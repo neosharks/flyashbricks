@@ -1,5 +1,8 @@
+import { ClickableRow, PanelLink } from '@/components/ui/clickable-row';
+import { DetailPanel, SplitView } from '@/components/ui/split-view';
+import { StaffDetail } from '@/components/staff/staff-detail';
+import { openId, panelHref } from '@/lib/panel-href';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { CalendarCheck, ChevronRight, HandCoins, HardHat, Wallet } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -21,7 +24,6 @@ import {
   TD,
   TH,
   THead,
-  TR,
 } from '@/components/ui/data-table';
 import { ROLE_ICONS } from '@/components/staff/role-icon';
 import { StaffDialog } from '@/components/staff/staff-dialog';
@@ -53,6 +55,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export default async function StaffPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const viewer = await requirePermissionPage('/staff', 'staff:read');
   const query = await searchParams;
+  const opened = openId(query);
   const filters = parseStaffFilters(query);
   const params = parseTableParams(query, STAFF_SORTS, { sort: 'name', dir: 'asc' });
   const rawGroup = Array.isArray(query.group) ? query.group[0] : query.group;
@@ -117,7 +120,7 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
           <TableSearch placeholder={t('searchPlaceholder')} />
           {!group && (
             <SortSelect
-              className="md:hidden"
+              className="@2xl:hidden"
               sort={params.sort}
               dir={params.dir}
               options={[
@@ -164,185 +167,204 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
         />
       </div>
 
-      {groups ? (
-        <GroupedTable
-          caption={t('title')}
-          groupLabel={group === 'role' ? t('filters.byRole') : t('filters.byWageType')}
-          columns={[
-            { key: 'people', label: t('columns.people'), format: 'number', bar: true },
-            { key: 'presentToday', label: t('columns.presentToday'), format: 'number' },
-            { key: 'balancePaise', label: t('columns.due'), format: 'money' },
-            { key: 'advancesPaise', label: t('columns.advances'), format: 'money' },
-          ]}
-          rows={groups.map((row) => ({
-            key: row.key,
-            label:
-              group === 'role'
-                ? t(`roles.${row.key as (typeof STAFF_ROLES)[number]}`)
-                : t(`wageTypes.${row.key as 'daily'}`),
-            ...(group === 'role' ? { href: `/staff?role=${row.key}` } : {}),
-            values: {
-              people: row.people,
-              presentToday: row.presentToday,
-              balancePaise: row.balancePaise,
-              advancesPaise: row.advancesPaise,
-            },
-          }))}
-          totals={{
-            people: groups.reduce((sum, row) => sum + row.people, 0),
-            presentToday: groups.reduce((sum, row) => sum + row.presentToday, 0),
-            balancePaise: groups.reduce((sum, row) => sum + row.balancePaise, 0),
-            advancesPaise: groups.reduce((sum, row) => sum + row.advancesPaise, 0),
-          }}
-        />
-      ) : page?.rows.length === 0 ? (
-        filtered ? (
-          <NoResults />
-        ) : (
-          <EmptyState icon={HardHat} title={t('emptyTitle')} description={t('emptyBody')} />
-        )
-      ) : page ? (
-        <>
-          <ul className="flex flex-col gap-2 md:hidden">
-            {page.rows.map((row) => {
-              const Icon = ROLE_ICONS[row.role];
-              return (
-                <li key={row.id}>
-                  <Link
-                    href={`/staff/${row.id}`}
-                    className={cn(
-                      'border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-3',
-                      !row.isActive && 'opacity-60',
-                    )}
-                  >
-                    <Avatar
-                      name={row.name}
-                      imageId={row.photoAssetId}
-                      gender={row.gender}
-                      variant={row.avatarVariant}
-                      size="md"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">
-                        {pickText(row.name, row.nameHi, locale)}
-                      </p>
-                      <p className="text-foreground-muted flex items-center gap-1 text-xs">
-                        <Icon aria-hidden className="size-3.5" />
-                        {t(`roles.${row.role}`)}
-                      </p>
-                      <div className="mt-1.5">
-                        <StatusChip
-                          status={row.todayStatus}
-                          label={
-                            row.todayStatus ? t(`status.${row.todayStatus}`) : t('noTodayMark')
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={cn(
-                          'text-sm font-semibold tabular-nums',
-                          row.balancePaise > 0 ? 'text-danger' : 'text-foreground-muted',
-                        )}
-                      >
-                        {owedLabel(row)}
-                      </p>
-                    </div>
-                    <ChevronRight aria-hidden className="text-foreground-subtle size-4" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          <Table caption={t('title')} minWidth="54rem" className="hidden md:block">
-            <THead>
-              <SortableTH
-                column="name"
-                label={t('columns.name')}
-                sort={params.sort}
-                dir={params.dir}
-                basePath="/staff"
-                query={query}
-              />
-              <SortableTH
-                column="role"
-                label={t('columns.role')}
-                sort={params.sort}
-                dir={params.dir}
-                basePath="/staff"
-                query={query}
-              />
-              <TH>{t('columns.pay')}</TH>
-              <TH>{t('columns.today')}</TH>
-              <TH align="right">{t('columns.due')}</TH>
-              <TH>{t('columns.phone')}</TH>
-            </THead>
-            <TBody>
-              {page.rows.map((row) => (
-                <TR key={row.id} className={cn(!row.isActive && 'opacity-60')}>
-                  <TD>
-                    <Link
+      <SplitView
+        panel={
+          opened && (
+            <DetailPanel fullHref={`/staff/${opened}`} closeHref={panelHref('/staff', query, null)}>
+              <StaffDetail id={opened} variant="panel" />
+            </DetailPanel>
+          )
+        }
+      >
+        {groups ? (
+          <GroupedTable
+            caption={t('title')}
+            groupLabel={group === 'role' ? t('filters.byRole') : t('filters.byWageType')}
+            columns={[
+              { key: 'people', label: t('columns.people'), format: 'number', bar: true },
+              { key: 'presentToday', label: t('columns.presentToday'), format: 'number' },
+              { key: 'balancePaise', label: t('columns.due'), format: 'money' },
+              { key: 'advancesPaise', label: t('columns.advances'), format: 'money' },
+            ]}
+            rows={groups.map((row) => ({
+              key: row.key,
+              label:
+                group === 'role'
+                  ? t(`roles.${row.key as (typeof STAFF_ROLES)[number]}`)
+                  : t(`wageTypes.${row.key as 'daily'}`),
+              ...(group === 'role' ? { href: `/staff?role=${row.key}` } : {}),
+              values: {
+                people: row.people,
+                presentToday: row.presentToday,
+                balancePaise: row.balancePaise,
+                advancesPaise: row.advancesPaise,
+              },
+            }))}
+            totals={{
+              people: groups.reduce((sum, row) => sum + row.people, 0),
+              presentToday: groups.reduce((sum, row) => sum + row.presentToday, 0),
+              balancePaise: groups.reduce((sum, row) => sum + row.balancePaise, 0),
+              advancesPaise: groups.reduce((sum, row) => sum + row.advancesPaise, 0),
+            }}
+          />
+        ) : page?.rows.length === 0 ? (
+          filtered ? (
+            <NoResults />
+          ) : (
+            <EmptyState icon={HardHat} title={t('emptyTitle')} description={t('emptyBody')} />
+          )
+        ) : page ? (
+          <>
+            <ul className="flex flex-col gap-2 @2xl:hidden">
+              {page.rows.map((row) => {
+                const Icon = ROLE_ICONS[row.role];
+                return (
+                  <li key={row.id}>
+                    <PanelLink
                       href={`/staff/${row.id}`}
-                      className="hover:text-action flex items-center gap-3 font-medium"
+                      panelHref={panelHref('/staff', query, row.id)}
+                      selected={row.id === opened}
+                      className={cn(
+                        'border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-3',
+                        !row.isActive && 'opacity-60',
+                      )}
                     >
                       <Avatar
                         name={row.name}
                         imageId={row.photoAssetId}
                         gender={row.gender}
                         variant={row.avatarVariant}
-                        size="sm"
+                        size="md"
                       />
-                      <span>
-                        {pickText(row.name, row.nameHi, locale)}
-                        {!row.isActive && (
-                          <Badge tone="neutral" className="ml-2">
-                            {t('left')}
-                          </Badge>
-                        )}
-                        {row.userId && (
-                          <span className="text-foreground-muted block text-xs">
-                            {t('hasLogin')}
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </TD>
-                  <TD muted>{t(`roles.${row.role}`)}</TD>
-                  <TD muted className="whitespace-nowrap">
-                    {t(`rate.${row.wageType}`, { amount: money(row.wageRatePaise) })}
-                  </TD>
-                  <TD>
-                    <StatusChip
-                      status={row.todayStatus}
-                      label={row.todayStatus ? t(`status.${row.todayStatus}`) : t('noTodayMark')}
-                    />
-                  </TD>
-                  <TD
-                    align="right"
-                    className={cn(
-                      row.balancePaise > 0 ? 'text-danger font-medium' : 'text-foreground-muted',
-                    )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">
+                          {pickText(row.name, row.nameHi, locale)}
+                        </p>
+                        <p className="text-foreground-muted flex items-center gap-1 text-xs">
+                          <Icon aria-hidden className="size-3.5" />
+                          {t(`roles.${row.role}`)}
+                        </p>
+                        <div className="mt-1.5">
+                          <StatusChip
+                            status={row.todayStatus}
+                            label={
+                              row.todayStatus ? t(`status.${row.todayStatus}`) : t('noTodayMark')
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p
+                          className={cn(
+                            'text-sm font-semibold tabular-nums',
+                            row.balancePaise > 0 ? 'text-danger' : 'text-foreground-muted',
+                          )}
+                        >
+                          {owedLabel(row)}
+                        </p>
+                      </div>
+                      <ChevronRight aria-hidden className="text-foreground-subtle size-4" />
+                    </PanelLink>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <Table caption={t('title')} minWidth="54rem" className="hidden @2xl:block">
+              <THead>
+                <SortableTH
+                  column="name"
+                  label={t('columns.name')}
+                  sort={params.sort}
+                  dir={params.dir}
+                  basePath="/staff"
+                  query={query}
+                />
+                <SortableTH
+                  column="role"
+                  label={t('columns.role')}
+                  sort={params.sort}
+                  dir={params.dir}
+                  basePath="/staff"
+                  query={query}
+                />
+                <TH>{t('columns.pay')}</TH>
+                <TH>{t('columns.today')}</TH>
+                <TH align="right">{t('columns.due')}</TH>
+                <TH>{t('columns.phone')}</TH>
+              </THead>
+              <TBody>
+                {page.rows.map((row) => (
+                  <ClickableRow
+                    key={row.id}
+                    href={`/staff/${row.id}`}
+                    panelHref={panelHref('/staff', query, row.id)}
+                    selected={row.id === opened}
+                    className={cn(!row.isActive && 'opacity-60')}
                   >
-                    {money(row.balancePaise)}
-                  </TD>
-                  <TD muted className="whitespace-nowrap tabular-nums">
-                    {row.phone ? formatPhone(row.phone) : '—'}
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
-          </Table>
-          <Pagination
-            basePath="/staff"
-            query={query}
-            next={page.next}
-            prev={page.prev}
-            count={page.rows.length}
-          />
-        </>
-      ) : null}
+                    <TD>
+                      <PanelLink
+                        href={`/staff/${row.id}`}
+                        panelHref={panelHref('/staff', query, row.id)}
+                        className="hover:text-action flex items-center gap-3 font-medium"
+                      >
+                        <Avatar
+                          name={row.name}
+                          imageId={row.photoAssetId}
+                          gender={row.gender}
+                          variant={row.avatarVariant}
+                          size="sm"
+                        />
+                        <span>
+                          {pickText(row.name, row.nameHi, locale)}
+                          {!row.isActive && (
+                            <Badge tone="neutral" className="ml-2">
+                              {t('left')}
+                            </Badge>
+                          )}
+                          {row.userId && (
+                            <span className="text-foreground-muted block text-xs">
+                              {t('hasLogin')}
+                            </span>
+                          )}
+                        </span>
+                      </PanelLink>
+                    </TD>
+                    <TD muted>{t(`roles.${row.role}`)}</TD>
+                    <TD muted className="whitespace-nowrap">
+                      {t(`rate.${row.wageType}`, { amount: money(row.wageRatePaise) })}
+                    </TD>
+                    <TD>
+                      <StatusChip
+                        status={row.todayStatus}
+                        label={row.todayStatus ? t(`status.${row.todayStatus}`) : t('noTodayMark')}
+                      />
+                    </TD>
+                    <TD
+                      align="right"
+                      className={cn(
+                        row.balancePaise > 0 ? 'text-danger font-medium' : 'text-foreground-muted',
+                      )}
+                    >
+                      {money(row.balancePaise)}
+                    </TD>
+                    <TD muted className="whitespace-nowrap tabular-nums">
+                      {row.phone ? formatPhone(row.phone) : '—'}
+                    </TD>
+                  </ClickableRow>
+                ))}
+              </TBody>
+            </Table>
+            <Pagination
+              basePath="/staff"
+              query={query}
+              next={page.next}
+              prev={page.prev}
+              count={page.rows.length}
+            />
+          </>
+        ) : null}
+      </SplitView>
     </Page>
   );
 }

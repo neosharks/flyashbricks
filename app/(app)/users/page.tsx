@@ -1,3 +1,7 @@
+import { ClickableRow, PanelLink } from '@/components/ui/clickable-row';
+import { DetailPanel, SplitView } from '@/components/ui/split-view';
+import { UserDetail } from '@/components/users/user-detail';
+import { openId, panelHref } from '@/lib/panel-href';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -22,7 +26,6 @@ import {
   TD,
   TH,
   THead,
-  TR,
 } from '@/components/ui/data-table';
 import { AccessSummary } from '@/components/users/access-matrix';
 import { UserStatusBadge } from '@/components/users/user-status-badge';
@@ -51,6 +54,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export default async function UsersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const viewer = await requirePermissionPage('/users', 'users:read');
   const query = await searchParams;
+  const opened = openId(query);
   const params = parseTableParams(query, USER_SORTS, { sort: 'name', dir: 'asc' });
   const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
   const status = USER_STATUSES.find((value) => value === one(query.status)) ?? null;
@@ -113,7 +117,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
           <TableSearch placeholder={t('searchPlaceholder')} />
           {!group && (
             <SortSelect
-              className="md:hidden"
+              className="@2xl:hidden"
               sort={params.sort}
               dir={params.dir}
               options={[
@@ -158,171 +162,192 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
         />
       </div>
 
-      {groups ? (
-        groups.length === 0 ? (
-          <NoResults />
+      <SplitView
+        panel={
+          opened && (
+            <DetailPanel fullHref={`/users/${opened}`} closeHref={panelHref('/users', query, null)}>
+              <UserDetail id={opened} variant="panel" />
+            </DetailPanel>
+          )
+        }
+      >
+        {groups ? (
+          groups.length === 0 ? (
+            <NoResults />
+          ) : (
+            <GroupedTable
+              caption={t('title')}
+              groupLabel={t(`groups.${group ?? 'role'}`)}
+              columns={[
+                { key: 'people', label: t('groupColumns.people'), format: 'number', bar: true },
+                { key: 'active', label: t('groupColumns.active'), format: 'number' },
+                { key: 'pending', label: t('groupColumns.pending'), format: 'number' },
+                { key: 'disabled', label: t('groupColumns.disabled'), format: 'number' },
+              ]}
+              rows={groups.map((row) => ({
+                key: row.key,
+                label:
+                  group === 'role'
+                    ? t(`roles.${row.key as (typeof ROLES)[number]}`)
+                    : t(
+                        `status.${row.key === 'pending' ? 'pendingPassword' : (row.key as 'active' | 'disabled')}`,
+                      ),
+                href: tableHref('/users', query, {
+                  group: null,
+                  ...(group === 'role' ? { role: row.key } : { status: row.key }),
+                }),
+                values: {
+                  people: row.people,
+                  active: row.active,
+                  pending: row.pending,
+                  disabled: row.disabled,
+                },
+              }))}
+              totals={{
+                people: groups.reduce((sum, row) => sum + row.people, 0),
+                active: groups.reduce((sum, row) => sum + row.active, 0),
+                pending: groups.reduce((sum, row) => sum + row.pending, 0),
+                disabled: groups.reduce((sum, row) => sum + row.disabled, 0),
+              }}
+            />
+          )
+        ) : !page || page.rows.length === 0 ? (
+          filtered ? (
+            <NoResults />
+          ) : (
+            <EmptyState
+              illustration={<Worker className="h-full w-auto" />}
+              icon={Users}
+              title={t('emptyTitle')}
+              description={t('emptyBody')}
+            />
+          )
         ) : (
-          <GroupedTable
-            caption={t('title')}
-            groupLabel={t(`groups.${group ?? 'role'}`)}
-            columns={[
-              { key: 'people', label: t('groupColumns.people'), format: 'number', bar: true },
-              { key: 'active', label: t('groupColumns.active'), format: 'number' },
-              { key: 'pending', label: t('groupColumns.pending'), format: 'number' },
-              { key: 'disabled', label: t('groupColumns.disabled'), format: 'number' },
-            ]}
-            rows={groups.map((row) => ({
-              key: row.key,
-              label:
-                group === 'role'
-                  ? t(`roles.${row.key as (typeof ROLES)[number]}`)
-                  : t(
-                      `status.${row.key === 'pending' ? 'pendingPassword' : (row.key as 'active' | 'disabled')}`,
-                    ),
-              href: tableHref('/users', query, {
-                group: null,
-                ...(group === 'role' ? { role: row.key } : { status: row.key }),
-              }),
-              values: {
-                people: row.people,
-                active: row.active,
-                pending: row.pending,
-                disabled: row.disabled,
-              },
-            }))}
-            totals={{
-              people: groups.reduce((sum, row) => sum + row.people, 0),
-              active: groups.reduce((sum, row) => sum + row.active, 0),
-              pending: groups.reduce((sum, row) => sum + row.pending, 0),
-              disabled: groups.reduce((sum, row) => sum + row.disabled, 0),
-            }}
-          />
-        )
-      ) : !page || page.rows.length === 0 ? (
-        filtered ? (
-          <NoResults />
-        ) : (
-          <EmptyState
-            illustration={<Worker className="h-full w-auto" />}
-            icon={Users}
-            title={t('emptyTitle')}
-            description={t('emptyBody')}
-          />
-        )
-      ) : (
-        <>
-          <ul className="flex flex-col gap-2 md:hidden">
-            {page.rows.map((user) => (
-              <li key={user.id}>
-                <Link
-                  href={`/users/${user.id}`}
-                  className="border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-3"
-                >
-                  <Avatar
-                    name={user.name}
-                    imageId={user.avatarAssetId}
-                    gender={user.gender}
-                    variant={user.avatarVariant}
-                    size="md"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{user.name}</p>
-                    <p className="text-foreground-muted truncate text-xs">
-                      {[user.jobTitle, t(`roles.${user.role}`)].filter(Boolean).join(' · ')}
-                    </p>
-                    <p className="text-foreground-subtle text-xs">
-                      {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : tc('never')}
-                    </p>
-                  </div>
-                  <span className="flex flex-col items-end gap-1">
-                    <UserStatusBadge user={user} />
-                    {!user.pinSignInAllowed && <Badge tone="neutral">{t('pinOff')}</Badge>}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <Table caption={t('title')} minWidth="52rem" className="hidden md:block">
-            <THead>
-              <SortableTH
-                column="name"
-                label={t('columns.name')}
-                sort={params.sort}
-                dir={params.dir}
-                basePath="/users"
-                query={query}
-              />
-              <TH>{t('columns.phone')}</TH>
-              <TH>{t('columns.role')}</TH>
-              <TH>{t('columns.access')}</TH>
-              <TH>{t('columns.status')}</TH>
-              <SortableTH
-                column="lastLoginAt"
-                label={t('columns.lastLogin')}
-                sort={params.sort}
-                dir={params.dir}
-                basePath="/users"
-                query={query}
-                defaultDir="desc"
-              />
-            </THead>
-            <TBody>
+          <>
+            <ul className="flex flex-col gap-2 @2xl:hidden">
               {page.rows.map((user) => (
-                <TR key={user.id}>
-                  <TD>
-                    <span className="flex items-center gap-3">
-                      <Avatar
-                        name={user.name}
-                        imageId={user.avatarAssetId}
-                        gender={user.gender}
-                        variant={user.avatarVariant}
-                        size="sm"
-                      />
-                      <span>
-                        <Link href={`/users/${user.id}`} className="hover:text-action font-medium">
-                          {user.name}
-                        </Link>
-                        {user.jobTitle && (
-                          <span className="text-foreground-muted block text-xs">
-                            {user.jobTitle}
-                          </span>
-                        )}
-                      </span>
-                    </span>
-                  </TD>
-                  <TD muted className="whitespace-nowrap tabular-nums">
-                    {formatPhone(user.phone)}
-                  </TD>
-                  <TD>
-                    <Badge tone={user.role === 'admin' ? 'info' : 'neutral'}>
-                      {t(`roles.${user.role}`)}
-                    </Badge>
-                  </TD>
-                  <TD>
-                    <AccessSummary permissions={user.permissions} admin={user.role === 'admin'} />
-                  </TD>
-                  <TD>
-                    <span className="flex flex-wrap gap-1">
+                <li key={user.id}>
+                  <PanelLink
+                    href={`/users/${user.id}`}
+                    panelHref={panelHref('/users', query, user.id)}
+                    selected={user.id === opened}
+                    className="border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-3"
+                  >
+                    <Avatar
+                      name={user.name}
+                      imageId={user.avatarAssetId}
+                      gender={user.gender}
+                      variant={user.avatarVariant}
+                      size="md"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{user.name}</p>
+                      <p className="text-foreground-muted truncate text-xs">
+                        {[user.jobTitle, t(`roles.${user.role}`)].filter(Boolean).join(' · ')}
+                      </p>
+                      <p className="text-foreground-subtle text-xs">
+                        {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : tc('never')}
+                      </p>
+                    </div>
+                    <span className="flex flex-col items-end gap-1">
                       <UserStatusBadge user={user} />
                       {!user.pinSignInAllowed && <Badge tone="neutral">{t('pinOff')}</Badge>}
                     </span>
-                  </TD>
-                  <TD muted className="whitespace-nowrap">
-                    {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : tc('never')}
-                  </TD>
-                </TR>
+                  </PanelLink>
+                </li>
               ))}
-            </TBody>
-          </Table>
-          <Pagination
-            basePath="/users"
-            query={query}
-            next={page.next}
-            prev={page.prev}
-            count={page.rows.length}
-          />
-        </>
-      )}
+            </ul>
+            <Table caption={t('title')} minWidth="52rem" className="hidden @2xl:block">
+              <THead>
+                <SortableTH
+                  column="name"
+                  label={t('columns.name')}
+                  sort={params.sort}
+                  dir={params.dir}
+                  basePath="/users"
+                  query={query}
+                />
+                <TH>{t('columns.phone')}</TH>
+                <TH>{t('columns.role')}</TH>
+                <TH>{t('columns.access')}</TH>
+                <TH>{t('columns.status')}</TH>
+                <SortableTH
+                  column="lastLoginAt"
+                  label={t('columns.lastLogin')}
+                  sort={params.sort}
+                  dir={params.dir}
+                  basePath="/users"
+                  query={query}
+                  defaultDir="desc"
+                />
+              </THead>
+              <TBody>
+                {page.rows.map((user) => (
+                  <ClickableRow
+                    key={user.id}
+                    href={`/users/${user.id}`}
+                    panelHref={panelHref('/users', query, user.id)}
+                    selected={user.id === opened}
+                  >
+                    <TD>
+                      <span className="flex items-center gap-3">
+                        <Avatar
+                          name={user.name}
+                          imageId={user.avatarAssetId}
+                          gender={user.gender}
+                          variant={user.avatarVariant}
+                          size="sm"
+                        />
+                        <span>
+                          <PanelLink
+                            href={`/users/${user.id}`}
+                            panelHref={panelHref('/users', query, user.id)}
+                            className="hover:text-action font-medium"
+                          >
+                            {user.name}
+                          </PanelLink>
+                          {user.jobTitle && (
+                            <span className="text-foreground-muted block text-xs">
+                              {user.jobTitle}
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                    </TD>
+                    <TD muted className="whitespace-nowrap tabular-nums">
+                      {formatPhone(user.phone)}
+                    </TD>
+                    <TD>
+                      <Badge tone={user.role === 'admin' ? 'info' : 'neutral'}>
+                        {t(`roles.${user.role}`)}
+                      </Badge>
+                    </TD>
+                    <TD>
+                      <AccessSummary permissions={user.permissions} admin={user.role === 'admin'} />
+                    </TD>
+                    <TD>
+                      <span className="flex flex-wrap gap-1">
+                        <UserStatusBadge user={user} />
+                        {!user.pinSignInAllowed && <Badge tone="neutral">{t('pinOff')}</Badge>}
+                      </span>
+                    </TD>
+                    <TD muted className="whitespace-nowrap">
+                      {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : tc('never')}
+                    </TD>
+                  </ClickableRow>
+                ))}
+              </TBody>
+            </Table>
+            <Pagination
+              basePath="/users"
+              query={query}
+              next={page.next}
+              prev={page.prev}
+              count={page.rows.length}
+            />
+          </>
+        )}
+      </SplitView>
     </Page>
   );
 }

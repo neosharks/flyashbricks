@@ -1,3 +1,6 @@
+import { DetailPanel, SplitView } from '@/components/ui/split-view';
+import { MaterialDetail } from '@/components/raw-materials/material-detail';
+import { openId, panelHref } from '@/lib/panel-href';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { AlertTriangle, Clock, IndianRupee, Package } from 'lucide-react';
@@ -38,6 +41,7 @@ export default async function RawMaterialsPage({
 }) {
   const viewer = await requirePermissionPage('/raw-materials', 'rawMaterials:read');
   const query = await searchParams;
+  const opened = openId(query);
   const q = (one(query.q) ?? '').slice(0, 80);
   const sort = parseMaterialSort(one(query.sort));
   const show = parseMaterialShow(one(query.show));
@@ -105,40 +109,59 @@ export default async function RawMaterialsPage({
             />
           </div>
 
-          <div className="mb-3 flex flex-col gap-2">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <TableSearch placeholder={t('list.searchPlaceholder')} />
-              <SortSelect
-                className="sm:w-60"
-                sort={sort}
-                dir="asc"
-                options={MATERIAL_SORTS.map((value) => ({
-                  sort: value,
-                  dir: 'asc',
-                  label: t(`list.sort.${value}`),
+          <SplitView
+            panel={
+              opened && (
+                <DetailPanel
+                  fullHref={`/raw-materials/${opened}`}
+                  closeHref={panelHref('/raw-materials', query, null)}
+                >
+                  <MaterialDetail id={opened} variant="panel" />
+                </DetailPanel>
+              )
+            }
+          >
+            <div className="mb-3 flex flex-col gap-2">
+              <div className="flex flex-col gap-2 @xl:flex-row @xl:items-center">
+                <TableSearch placeholder={t('list.searchPlaceholder')} />
+                <SortSelect
+                  className="@xl:w-60"
+                  sort={sort}
+                  dir="asc"
+                  options={MATERIAL_SORTS.map((value) => ({
+                    sort: value,
+                    dir: 'asc',
+                    label: t(`list.sort.${value}`),
+                  }))}
+                />
+              </div>
+              <FilterPills
+                label={t('list.show.label')}
+                param="show"
+                basePath="/raw-materials"
+                query={query}
+                options={MATERIAL_SHOW.map((value) => ({
+                  value: value === 'active' ? null : value,
+                  label: t(`list.show.${value}`),
                 }))}
               />
             </div>
-            <FilterPills
-              label={t('list.show.label')}
-              param="show"
-              basePath="/raw-materials"
-              query={query}
-              options={MATERIAL_SHOW.map((value) => ({
-                value: value === 'active' ? null : value,
-                label: t(`list.show.${value}`),
-              }))}
-            />
-          </div>
 
-          {shown.length === 0 && (
-            <p className="text-foreground-muted py-6 text-center text-sm">{t('list.noMatch')}</p>
-          )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {shown.map((material) => (
-              <MaterialCard key={material.id} material={material} canWrite={canWrite} />
-            ))}
-          </div>
+            {shown.length === 0 && (
+              <p className="text-foreground-muted py-6 text-center text-sm">{t('list.noMatch')}</p>
+            )}
+            <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2 @5xl:grid-cols-3">
+              {shown.map((material) => (
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                  canWrite={canWrite}
+                  panelHref={panelHref('/raw-materials', query, material.id)}
+                  selected={material.id === opened}
+                />
+              ))}
+            </div>
+          </SplitView>
         </>
       )}
     </Page>

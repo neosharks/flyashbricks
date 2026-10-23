@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { ChevronRight, Clock } from 'lucide-react';
 import { SiloGauge } from '@/components/charts/silo-gauge';
+import { ClickableCard, PanelLink } from '@/components/ui/clickable-row';
 import { Meter } from '@/components/ui/meter';
 import type { MaterialRow } from '@/features/raw-materials/types';
 import { formatQuantity } from '@/lib/quantity';
@@ -10,13 +10,20 @@ import { LevelBadge } from './level-badge';
 import { AdjustDialog } from './adjust-dialog';
 import { PurchaseDialog } from './purchase-dialog';
 
-/** One material: the big number first, its status in words, then the two everyday actions. */
+/**
+ * One material: the big number first, its status in words, then the two
+ * everyday actions. Clicking the card anywhere else opens the material.
+ */
 export async function MaterialCard({
   material,
   canWrite,
+  panelHref,
+  selected = false,
 }: {
   material: MaterialRow;
   canWrite: boolean;
+  panelHref?: string | undefined;
+  selected?: boolean;
 }) {
   const [t, tc, locale] = await Promise.all([
     getTranslations('rawMaterials'),
@@ -32,7 +39,10 @@ export async function MaterialCard({
         : null;
 
   return (
-    <article
+    <ClickableCard
+      href={`/raw-materials/${material.id}`}
+      panelHref={panelHref}
+      selected={selected}
       className={cn(
         'border-border bg-surface flex flex-col gap-4 rounded-lg border p-4 shadow-xs',
         !material.isActive && 'opacity-60',
@@ -43,17 +53,22 @@ export async function MaterialCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 truncate font-semibold">
-              <Link href={`/raw-materials/${material.id}`} className="hover:text-action">
+              <PanelLink
+                href={`/raw-materials/${material.id}`}
+                panelHref={panelHref}
+                className="hover:text-action"
+              >
                 {material.name}
-              </Link>
+              </PanelLink>
             </h2>
-            <Link
+            <PanelLink
               href={`/raw-materials/${material.id}`}
+              panelHref={panelHref}
               className="text-foreground-muted hover:text-foreground -m-3 shrink-0 p-3"
               aria-label={`${t('details')}: ${material.name}`}
             >
               <ChevronRight aria-hidden className="size-5" />
-            </Link>
+            </PanelLink>
           </div>
           <p className="text-foreground-muted text-xs">
             {t(`kinds.${material.kind}`)}
@@ -101,6 +116,6 @@ export async function MaterialCard({
           <AdjustDialog material={material} className="w-full" />
         </div>
       )}
-    </article>
+    </ClickableCard>
   );
 }

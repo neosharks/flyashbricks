@@ -1,3 +1,7 @@
+import { ClickableRow, PanelLink } from '@/components/ui/clickable-row';
+import { DetailPanel, SplitView } from '@/components/ui/split-view';
+import { CustomerDetail } from '@/components/customers/customer-detail';
+import { openId, panelHref } from '@/lib/panel-href';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -18,7 +22,6 @@ import {
   TD,
   TH,
   THead,
-  TR,
 } from '@/components/ui/data-table';
 import { CustomerDialogButton } from '@/components/customers/customer-dialog';
 import { CustomerGroups } from '@/components/customers/customer-groups';
@@ -52,6 +55,7 @@ export default async function CustomersPage({
 }) {
   const viewer = await requirePermissionPage('/customers', 'sales:read');
   const query = await searchParams;
+  const opened = openId(query);
   const filters = parseCustomerFilters(query);
   const dues = filters.dues;
   const params = parseTableParams(query, CUSTOMER_SORTS, {
@@ -151,7 +155,7 @@ export default async function CustomersPage({
         />
         {!group && (
           <SortSelect
-            className="md:hidden"
+            className="@2xl:hidden"
             sort={params.sort}
             dir={params.dir}
             options={[
@@ -182,145 +186,166 @@ export default async function CustomersPage({
         </ul>
       )}
 
-      {groups ? (
-        groups.length === 0 ? (
-          <NoResults />
+      <SplitView
+        panel={
+          opened && (
+            <DetailPanel
+              fullHref={`/customers/${opened}`}
+              closeHref={panelHref('/customers', query, null)}
+            >
+              <CustomerDetail id={opened} variant="panel" />
+            </DetailPanel>
+          )
+        }
+      >
+        {groups ? (
+          groups.length === 0 ? (
+            <NoResults />
+          ) : (
+            <CustomerGroups by={group ?? 'city'} rows={groups} query={query} />
+          )
+        ) : !page || page.rows.length === 0 ? (
+          filtered ? (
+            <NoResults />
+          ) : (
+            <EmptyState
+              illustration={<DeliveryTruck loaded className="h-full w-auto" />}
+              icon={Users}
+              title={t('emptyTitle')}
+              description={t('emptyBody')}
+            />
+          )
         ) : (
-          <CustomerGroups by={group ?? 'city'} rows={groups} query={query} />
-        )
-      ) : !page || page.rows.length === 0 ? (
-        filtered ? (
-          <NoResults />
-        ) : (
-          <EmptyState
-            illustration={<DeliveryTruck loaded className="h-full w-auto" />}
-            icon={Users}
-            title={t('emptyTitle')}
-            description={t('emptyBody')}
-          />
-        )
-      ) : (
-        <>
-          {/* Phones: one tappable card per customer, the amount due big. */}
-          <ul className="flex flex-col gap-2 md:hidden">
-            {page.rows.map((customer) => (
-              <li key={customer.id}>
-                <Link
-                  href={`/customers/${customer.id}`}
-                  className="border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-4"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{customer.name}</p>
-                    <p className="text-foreground-muted truncate text-sm tabular-nums">
-                      {formatPhone(customer.phones[0] ?? '')}
-                      {customer.city ? ` · ${customer.city}` : ''}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={cn(
-                        'text-lg font-semibold tabular-nums',
-                        customer.duePaise > 0 ? 'text-danger' : 'text-success',
-                      )}
-                    >
-                      {money(customer.duePaise)}
-                    </p>
-                    <p className="text-foreground-muted text-xs">
-                      {customer.duePaise > 0 ? t('detail.dueTone') : t('detail.settled')}
-                    </p>
-                  </div>
-                  <ChevronRight aria-hidden className="text-foreground-subtle size-4 shrink-0" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          <div className="hidden md:block">
-            <Table caption={t('title')} minWidth="54rem">
-              <THead>
-                <SortableTH
-                  column="name"
-                  label={t('columns.name')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/customers"
-                  query={query}
-                />
-                <TH>{t('columns.phone')}</TH>
-                <TH>{t('columns.city')}</TH>
-                <TH align="right">{t('columns.billed')}</TH>
-                <SortableTH
-                  column="bricksBought"
-                  label={t('columns.bricks')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/customers"
-                  query={query}
-                  align="right"
-                  defaultDir="desc"
-                />
-                <SortableTH
-                  column="duePaise"
-                  label={t('columns.due')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/customers"
-                  query={query}
-                  align="right"
-                  defaultDir="desc"
-                />
-                <SortableTH
-                  column="lastSaleAt"
-                  label={t('columns.lastSale')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/customers"
-                  query={query}
-                  defaultDir="desc"
-                />
-              </THead>
-              <TBody>
-                {page.rows.map((customer) => (
-                  <TR key={customer.id}>
-                    <TD>
-                      <Link
-                        href={`/customers/${customer.id}`}
-                        className="hover:text-action font-medium"
+          <>
+            {/* Phones: one tappable card per customer, the amount due big. */}
+            <ul className="flex flex-col gap-2 @2xl:hidden">
+              {page.rows.map((customer) => (
+                <li key={customer.id}>
+                  <PanelLink
+                    href={`/customers/${customer.id}`}
+                    panelHref={panelHref('/customers', query, customer.id)}
+                    selected={customer.id === opened}
+                    className="border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{customer.name}</p>
+                      <p className="text-foreground-muted truncate text-sm tabular-nums">
+                        {formatPhone(customer.phones[0] ?? '')}
+                        {customer.city ? ` · ${customer.city}` : ''}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p
+                        className={cn(
+                          'text-lg font-semibold tabular-nums',
+                          customer.duePaise > 0 ? 'text-danger' : 'text-success',
+                        )}
                       >
-                        {customer.name}
-                      </Link>
-                    </TD>
-                    <TD muted className="whitespace-nowrap tabular-nums">
-                      {formatPhone(customer.phones[0] ?? '')}
-                    </TD>
-                    <TD muted>{customer.city ?? '—'}</TD>
-                    <TD align="right">{money(customer.billedPaise)}</TD>
-                    <TD align="right" muted>
-                      {formatNumber(customer.bricksBought, locale)}
-                    </TD>
-                    <TD
-                      align="right"
-                      className={cn('font-medium', customer.duePaise > 0 && 'text-danger')}
+                        {money(customer.duePaise)}
+                      </p>
+                      <p className="text-foreground-muted text-xs">
+                        {customer.duePaise > 0 ? t('detail.dueTone') : t('detail.settled')}
+                      </p>
+                    </div>
+                    <ChevronRight aria-hidden className="text-foreground-subtle size-4 shrink-0" />
+                  </PanelLink>
+                </li>
+              ))}
+            </ul>
+
+            <div className="hidden @2xl:block">
+              <Table caption={t('title')} minWidth="54rem">
+                <THead>
+                  <SortableTH
+                    column="name"
+                    label={t('columns.name')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/customers"
+                    query={query}
+                  />
+                  <TH>{t('columns.phone')}</TH>
+                  <TH>{t('columns.city')}</TH>
+                  <TH align="right">{t('columns.billed')}</TH>
+                  <SortableTH
+                    column="bricksBought"
+                    label={t('columns.bricks')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/customers"
+                    query={query}
+                    align="right"
+                    defaultDir="desc"
+                  />
+                  <SortableTH
+                    column="duePaise"
+                    label={t('columns.due')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/customers"
+                    query={query}
+                    align="right"
+                    defaultDir="desc"
+                  />
+                  <SortableTH
+                    column="lastSaleAt"
+                    label={t('columns.lastSale')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/customers"
+                    query={query}
+                    defaultDir="desc"
+                  />
+                </THead>
+                <TBody>
+                  {page.rows.map((customer) => (
+                    <ClickableRow
+                      key={customer.id}
+                      href={`/customers/${customer.id}`}
+                      panelHref={panelHref('/customers', query, customer.id)}
+                      selected={customer.id === opened}
                     >
-                      {money(customer.duePaise)}
-                    </TD>
-                    <TD muted className="whitespace-nowrap">
-                      {customer.lastSaleAt ? formatDate(customer.lastSaleAt, locale) : '—'}
-                    </TD>
-                  </TR>
-                ))}
-              </TBody>
-            </Table>
-          </div>
-          <Pagination
-            basePath="/customers"
-            query={query}
-            next={page.next}
-            prev={page.prev}
-            count={page.rows.length}
-          />
-        </>
-      )}
+                      <TD>
+                        <PanelLink
+                          href={`/customers/${customer.id}`}
+                          panelHref={panelHref('/customers', query, customer.id)}
+                          className="hover:text-action font-medium"
+                        >
+                          {customer.name}
+                        </PanelLink>
+                      </TD>
+                      <TD muted className="whitespace-nowrap tabular-nums">
+                        {formatPhone(customer.phones[0] ?? '')}
+                      </TD>
+                      <TD muted>{customer.city ?? '—'}</TD>
+                      <TD align="right">{money(customer.billedPaise)}</TD>
+                      <TD align="right" muted>
+                        {formatNumber(customer.bricksBought, locale)}
+                      </TD>
+                      <TD
+                        align="right"
+                        className={cn('font-medium', customer.duePaise > 0 && 'text-danger')}
+                      >
+                        {money(customer.duePaise)}
+                      </TD>
+                      <TD muted className="whitespace-nowrap">
+                        {customer.lastSaleAt ? formatDate(customer.lastSaleAt, locale) : '—'}
+                      </TD>
+                    </ClickableRow>
+                  ))}
+                </TBody>
+              </Table>
+            </div>
+            <Pagination
+              basePath="/customers"
+              query={query}
+              next={page.next}
+              prev={page.prev}
+              count={page.rows.length}
+            />
+          </>
+        )}
+      </SplitView>
     </Page>
   );
 }

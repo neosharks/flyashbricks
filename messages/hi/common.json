@@ -160,5 +160,10 @@
     "preview": "नमूना: 2,500 ईंटें रमेश कुमार को ₹16,250 में बेचीं। — 2,500 bricks sold to Ramesh Kumar for ₹16,250."
   },
   "credit": "<link>NeoSharks</link> द्वारा <heart></heart> से बनाया गया",
-  "creditHeart": "प्यार"
+  "creditHeart": "प्यार",
+  "panel": {
+    "openFull": "पूरा पेज खोलें",
+    "close": "बंद करें",
+    "missing": "यह रिकॉर्ड अब उपलब्ध नहीं है।"
+  }
 }

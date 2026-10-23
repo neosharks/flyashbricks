@@ -1,3 +1,4 @@
+import { ClickableRow } from '@/components/ui/clickable-row';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Page } from '@/components/ui/page';
 import { PageHeader } from '@/components/ui/page-header';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/data-table';
+import { Table, TBody, TD, TH, THead } from '@/components/ui/data-table';
 import { PeriodFilter } from '@/components/staff/period-filter';
 import { StaffPaymentDialog } from '@/components/staff/staff-payment-dialog';
 import { StaffTabs } from '@/components/staff/staff-tabs';
@@ -193,7 +194,11 @@ export default async function PayrollPage({
               {rows.map((row) => {
                 const name = pickText(row.name, row.nameHi, locale);
                 return (
-                  <TR key={row.id} className={cn(!row.isActive && 'opacity-70')}>
+                  <ClickableRow
+                    key={row.id}
+                    href={`/staff/${row.id}`}
+                    className={cn(!row.isActive && 'opacity-70')}
+                  >
                     <TD>
                       <Link href={`/staff/${row.id}`} className="hover:text-action font-medium">
                         {name}
@@ -248,7 +253,7 @@ export default async function PayrollPage({
                         </Button>
                       </div>
                     </TD>
-                  </TR>
+                  </ClickableRow>
                 );
               })}
             </TBody>

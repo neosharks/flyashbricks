@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { ChevronRight } from 'lucide-react';
-import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/data-table';
+import { ClickableRow, PanelLink } from '@/components/ui/clickable-row';
+import { SELECTED_CARD } from '@/components/ui/selection';
+import { Table, TBody, TD, TH, THead } from '@/components/ui/data-table';
 import type { SaleRow } from '@/features/sales/types';
 import { formatSaleNumber } from '@/lib/ids';
 import { formatMoney } from '@/lib/money';
@@ -9,20 +11,25 @@ import { cn, formatDate, formatNumber } from '@/lib/utils';
 import { SaleStatusBadge } from './sale-status-badge';
 
 /**
- * Sales as tappable cards on a phone (customer, date, amount due big) and a
- * table from tablet width up. `header` lets the list page supply sortable
- * column headers; detail pages use the plain ones.
+ * Sales as tappable cards where room is short (a phone, or the list beside an
+ * open record) and a table where it is not. `header` lets the list page supply
+ * sortable column headers; detail pages use the plain ones. With `panelHref`
+ * a sale opens beside the list on a wide screen; `openId` marks that one.
  */
 export async function SalesList({
   rows,
   caption,
   showCustomer = true,
   header,
+  panelHref,
+  openId = null,
 }: {
   rows: SaleRow[];
   caption: string;
   showCustomer?: boolean;
   header?: React.ReactNode;
+  panelHref?: ((id: string) => string) | undefined;
+  openId?: string | null;
 }) {
   const [t, tc, locale] = await Promise.all([
     getTranslations('sales'),
@@ -33,14 +40,16 @@ export async function SalesList({
 
   return (
     <>
-      <ul className="flex flex-col gap-2 md:hidden">
+      <ul className="flex flex-col gap-2 @2xl:hidden">
         {rows.map((sale) => (
           <li key={sale.id}>
-            <Link
+            <PanelLink
               href={`/sales/${sale.id}`}
+              panelHref={panelHref?.(sale.id)}
               className={cn(
-                'border-border bg-surface active:bg-surface-muted flex items-center gap-3 rounded-lg border p-4',
+                'border-border bg-surface hover:bg-surface-muted active:bg-surface-muted flex items-center gap-3 rounded-lg border p-4',
                 sale.voided && 'opacity-60',
+                sale.id === openId && SELECTED_CARD,
               )}
             >
               <div className="min-w-0 flex-1">
@@ -73,12 +82,12 @@ export async function SalesList({
                 )}
               </div>
               <ChevronRight aria-hidden className="text-foreground-subtle size-4 shrink-0" />
-            </Link>
+            </PanelLink>
           </li>
         ))}
       </ul>
 
-      <div className="hidden md:block">
+      <div className="hidden @2xl:block">
         <Table caption={caption} minWidth="58rem">
           {header ?? (
             <THead>
@@ -94,21 +103,31 @@ export async function SalesList({
           )}
           <TBody>
             {rows.map((sale) => (
-              <TR key={sale.id} className={cn(sale.voided && 'opacity-60')}>
+              <ClickableRow
+                key={sale.id}
+                href={`/sales/${sale.id}`}
+                panelHref={panelHref?.(sale.id)}
+                selected={sale.id === openId}
+                className={cn(sale.voided && 'opacity-60')}
+              >
                 <TD className="whitespace-nowrap">
-                  <Link
+                  <PanelLink
                     href={`/sales/${sale.id}`}
+                    panelHref={panelHref?.(sale.id)}
                     className="hover:text-action font-medium tabular-nums"
                   >
                     {formatSaleNumber(sale.number)}
-                  </Link>
+                  </PanelLink>
                 </TD>
                 <TD muted className="whitespace-nowrap">
                   {formatDate(sale.date, locale)}
                 </TD>
                 {showCustomer && (
                   <TD>
-                    <Link href={`/customers/${sale.customerId}`} className="hover:text-action">
+                    <Link
+                      href={`/customers/${sale.customerId}`}
+                      className="hover:text-action hover:underline"
+                    >
                       {sale.customerName}
                     </Link>
                     <p className="text-foreground-muted max-w-56 truncate text-xs">
@@ -132,7 +151,7 @@ export async function SalesList({
                 <TD>
                   <SaleStatusBadge status={sale.status} voided={sale.voided} />
                 </TD>
-              </TR>
+              </ClickableRow>
             ))}
           </TBody>
         </Table>

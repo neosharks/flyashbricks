@@ -17,6 +17,9 @@ import { DateRangeFilter } from '@/components/sales/date-range-filter';
 import { ExportLink } from '@/components/sales/export-link';
 import { MoneyColumnChart } from '@/components/sales/money-chart';
 import { SalesList } from '@/components/sales/sales-table';
+import { SaleDetail } from '@/components/sales/sale-detail';
+import { DetailPanel, SplitView } from '@/components/ui/split-view';
+import { openId, panelHref } from '@/lib/panel-href';
 import { SalesActiveFilters } from '@/components/sales/active-filters';
 import { SalesGroups } from '@/components/sales/sales-groups';
 import { parseSalesFilters } from '@/features/sales/filters';
@@ -46,6 +49,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 export default async function SalesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const viewer = await requirePermissionPage('/sales', 'sales:read');
   const query = await searchParams;
+  const opened = openId(query);
   const { timezone } = await getOrgSummary(viewer.orgId);
   const params = parseTableParams(query, SALE_SORTS, { sort: 'date', dir: 'desc' });
   const filters = parseSalesFilters(query, timezone);
@@ -163,164 +167,176 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
         />
       </section>
 
-      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <TableSearch placeholder={t('searchPlaceholder')} />
-        <FilterPills
-          label={t('statusFilter.label')}
-          param="status"
-          basePath="/sales"
-          query={query}
-          options={[
-            { value: null, label: t('statusFilter.all') },
-            { value: 'due', label: t('statusFilter.due') },
-            { value: 'unpaid', label: t('statusFilter.unpaid') },
-            { value: 'partial', label: t('statusFilter.partial') },
-            { value: 'paid', label: t('statusFilter.paid') },
-            { value: 'voided', label: t('statusFilter.voided') },
-          ]}
-        />
-      </div>
-
-      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <FilterPills
-          label={t('group.label')}
-          param="group"
-          basePath="/sales"
-          query={query}
-          options={[
-            { value: null, label: t('group.none') },
-            ...SALE_GROUPS.map((value) => ({ value, label: t(`group.${value}`) })),
-          ]}
-        />
-        {!group && (
-          <SortSelect
-            className="md:hidden"
-            sort={params.sort}
-            dir={params.dir}
-            options={[
-              { sort: 'date', dir: 'desc', label: t('sort.newest') },
-              { sort: 'date', dir: 'asc', label: t('sort.oldest') },
-              { sort: 'totalPaise', dir: 'desc', label: t('sort.highestTotal') },
-              { sort: 'totalPaise', dir: 'asc', label: t('sort.lowestTotal') },
-              { sort: 'duePaise', dir: 'desc', label: t('sort.mostDue') },
-              { sort: 'customerName', dir: 'asc', label: t('sort.customerAz') },
-              { sort: 'bricks', dir: 'desc', label: t('sort.mostBricks') },
-              { sort: 'avgRatePaise', dir: 'desc', label: t('sort.highestRate') },
-              { sort: 'avgRatePaise', dir: 'asc', label: t('sort.lowestRate') },
-            ]}
-          />
-        )}
-      </div>
-
-      <div className="mb-3">
-        <SalesActiveFilters filters={filters} names={names} query={query} />
-      </div>
-
-      {groups ? (
-        groups.length === 0 ? (
-          <NoResults />
-        ) : (
-          <SalesGroups by={group ?? 'day'} rows={groups} query={query} />
-        )
-      ) : !page || page.rows.length === 0 ? (
-        filtered ? (
-          <NoResults />
-        ) : (
-          <EmptyState
-            illustration={<DeliveryTruck loaded className="h-full w-auto" />}
-            icon={ReceiptIndianRupee}
-            title={t('emptyTitle')}
-            description={t('emptyBody')}
-            action={
-              canWrite && (
-                <Button asChild size="lg">
-                  <Link href="/sales/new">
-                    <Plus aria-hidden />
-                    {t('new')}
-                  </Link>
-                </Button>
-              )
-            }
-          />
-        )
-      ) : (
-        <>
-          <SalesList
-            rows={page.rows}
-            caption={t('title')}
-            header={
-              <THead>
-                <TH>{t('columns.number')}</TH>
-                <SortableTH
-                  column="date"
-                  label={t('columns.date')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/sales"
-                  query={query}
-                  defaultDir="desc"
-                />
-                <SortableTH
-                  column="customerName"
-                  label={t('columns.customer')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/sales"
-                  query={query}
-                />
-                <SortableTH
-                  column="bricks"
-                  label={t('columns.bricks')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/sales"
-                  query={query}
-                  align="right"
-                  defaultDir="desc"
-                />
-                <SortableTH
-                  column="avgRatePaise"
-                  label={t('columns.rate')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/sales"
-                  query={query}
-                  align="right"
-                  defaultDir="desc"
-                />
-                <SortableTH
-                  column="totalPaise"
-                  label={t('columns.total')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/sales"
-                  query={query}
-                  align="right"
-                  defaultDir="desc"
-                />
-                <SortableTH
-                  column="duePaise"
-                  label={t('columns.due')}
-                  sort={params.sort}
-                  dir={params.dir}
-                  basePath="/sales"
-                  query={query}
-                  align="right"
-                  defaultDir="desc"
-                />
-                <TH>{t('columns.status')}</TH>
-              </THead>
-            }
-          />
-          <Pagination
+      <SplitView
+        panel={
+          opened && (
+            <DetailPanel fullHref={`/sales/${opened}`} closeHref={panelHref('/sales', query, null)}>
+              <SaleDetail id={opened} variant="panel" />
+            </DetailPanel>
+          )
+        }
+      >
+        <div className="mb-3 flex flex-col gap-3 @4xl:flex-row @4xl:items-center @4xl:justify-between">
+          <TableSearch placeholder={t('searchPlaceholder')} />
+          <FilterPills
+            label={t('statusFilter.label')}
+            param="status"
             basePath="/sales"
             query={query}
-            next={page.next}
-            prev={page.prev}
-            count={page.rows.length}
+            options={[
+              { value: null, label: t('statusFilter.all') },
+              { value: 'due', label: t('statusFilter.due') },
+              { value: 'unpaid', label: t('statusFilter.unpaid') },
+              { value: 'partial', label: t('statusFilter.partial') },
+              { value: 'paid', label: t('statusFilter.paid') },
+              { value: 'voided', label: t('statusFilter.voided') },
+            ]}
           />
-        </>
-      )}
+        </div>
+
+        <div className="mb-3 flex flex-col gap-3 @4xl:flex-row @4xl:items-center @4xl:justify-between">
+          <FilterPills
+            label={t('group.label')}
+            param="group"
+            basePath="/sales"
+            query={query}
+            options={[
+              { value: null, label: t('group.none') },
+              ...SALE_GROUPS.map((value) => ({ value, label: t(`group.${value}`) })),
+            ]}
+          />
+          {!group && (
+            <SortSelect
+              className="@2xl:hidden"
+              sort={params.sort}
+              dir={params.dir}
+              options={[
+                { sort: 'date', dir: 'desc', label: t('sort.newest') },
+                { sort: 'date', dir: 'asc', label: t('sort.oldest') },
+                { sort: 'totalPaise', dir: 'desc', label: t('sort.highestTotal') },
+                { sort: 'totalPaise', dir: 'asc', label: t('sort.lowestTotal') },
+                { sort: 'duePaise', dir: 'desc', label: t('sort.mostDue') },
+                { sort: 'customerName', dir: 'asc', label: t('sort.customerAz') },
+                { sort: 'bricks', dir: 'desc', label: t('sort.mostBricks') },
+                { sort: 'avgRatePaise', dir: 'desc', label: t('sort.highestRate') },
+                { sort: 'avgRatePaise', dir: 'asc', label: t('sort.lowestRate') },
+              ]}
+            />
+          )}
+        </div>
+
+        <div className="mb-3">
+          <SalesActiveFilters filters={filters} names={names} query={query} />
+        </div>
+
+        {groups ? (
+          groups.length === 0 ? (
+            <NoResults />
+          ) : (
+            <SalesGroups by={group ?? 'day'} rows={groups} query={query} />
+          )
+        ) : !page || page.rows.length === 0 ? (
+          filtered ? (
+            <NoResults />
+          ) : (
+            <EmptyState
+              illustration={<DeliveryTruck loaded className="h-full w-auto" />}
+              icon={ReceiptIndianRupee}
+              title={t('emptyTitle')}
+              description={t('emptyBody')}
+              action={
+                canWrite && (
+                  <Button asChild size="lg">
+                    <Link href="/sales/new">
+                      <Plus aria-hidden />
+                      {t('new')}
+                    </Link>
+                  </Button>
+                )
+              }
+            />
+          )
+        ) : (
+          <>
+            <SalesList
+              rows={page.rows}
+              caption={t('title')}
+              panelHref={(id) => panelHref('/sales', query, id)}
+              openId={opened}
+              header={
+                <THead>
+                  <TH>{t('columns.number')}</TH>
+                  <SortableTH
+                    column="date"
+                    label={t('columns.date')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/sales"
+                    query={query}
+                    defaultDir="desc"
+                  />
+                  <SortableTH
+                    column="customerName"
+                    label={t('columns.customer')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/sales"
+                    query={query}
+                  />
+                  <SortableTH
+                    column="bricks"
+                    label={t('columns.bricks')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/sales"
+                    query={query}
+                    align="right"
+                    defaultDir="desc"
+                  />
+                  <SortableTH
+                    column="avgRatePaise"
+                    label={t('columns.rate')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/sales"
+                    query={query}
+                    align="right"
+                    defaultDir="desc"
+                  />
+                  <SortableTH
+                    column="totalPaise"
+                    label={t('columns.total')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/sales"
+                    query={query}
+                    align="right"
+                    defaultDir="desc"
+                  />
+                  <SortableTH
+                    column="duePaise"
+                    label={t('columns.due')}
+                    sort={params.sort}
+                    dir={params.dir}
+                    basePath="/sales"
+                    query={query}
+                    align="right"
+                    defaultDir="desc"
+                  />
+                  <TH>{t('columns.status')}</TH>
+                </THead>
+              }
+            />
+            <Pagination
+              basePath="/sales"
+              query={query}
+              next={page.next}
+              prev={page.prev}
+              count={page.rows.length}
+            />
+          </>
+        )}
+      </SplitView>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
